@@ -126,6 +126,7 @@ func TestDentryRenameReuseInode(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	testNewFileInode := getInode(t, testNewFile)
 
 	event, _, err := test.GetEvent()
 	if err != nil {
@@ -171,6 +172,9 @@ func TestDentryRenameReuseInode(t *testing.T) {
 			t.Errorf("expected open event, got %s", event.GetType())
 		}
 
+		if inode, _ := event.GetFieldValue("open.inode"); inode != int(testNewFileInode) {
+			t.Errorf("expected inode not found")
+		}
 		if value, _ := event.GetFieldValue("open.filename"); value.(string) != testReuseInodeFile {
 			t.Errorf("expected filename not found %s != %s", value.(string), testReuseInodeFile)
 		}
