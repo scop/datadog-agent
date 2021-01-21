@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/DataDog/datadog-agent/pkg/ebpf"
-
 	"github.com/DataDog/datadog-agent/pkg/process/config"
 	"github.com/DataDog/datadog-agent/pkg/process/util"
+	"github.com/DataDog/datadog-agent/pkg/util/kernel"
 	"github.com/DataDog/datadog-agent/pkg/util/log"
 )
 
@@ -18,7 +18,7 @@ func TracerConfigFromConfig(cfg *config.AgentConfig) *Config {
 	tracerConfig := NewDefaultConfig()
 	tracerConfig.Config = *ebpf.SysProbeConfigFromConfig(cfg)
 
-	if !isIPv6EnabledOnHost() {
+	if !kernel.IsIPv6Enabled() {
 		tracerConfig.CollectIPv6Conns = false
 		log.Info("system probe IPv6 tracing disabled by system")
 	} else if cfg.DisableIPv6Tracing {
@@ -86,11 +86,6 @@ func TracerConfigFromConfig(cfg *config.AgentConfig) *Config {
 	tracerConfig.UDPConnTimeout = getUDPConnTimeout()
 
 	return tracerConfig
-}
-
-func isIPv6EnabledOnHost() bool {
-	_, err := ioutil.ReadFile(filepath.Join(util.GetProcRoot(), "net/if_inet6"))
-	return err == nil
 }
 
 func getUDPConnTimeout() time.Duration {
