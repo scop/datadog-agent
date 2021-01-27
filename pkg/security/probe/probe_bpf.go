@@ -161,8 +161,6 @@ func (p *Probe) Init(client *statsd.Client) error {
 		defer bytecodeReader.Close()
 	}
 
-	p.manager = ebpf.NewRuntimeSecurityManager()
-
 	// Set data and lost handlers
 	for _, perfMap := range p.manager.PerfMaps {
 		switch perfMap.Name {
@@ -786,6 +784,7 @@ func NewProbe(config *config.Config, client *statsd.Client) (*Probe, error) {
 		config:            config,
 		invalidDiscarders: getInvalidDiscarders(),
 		approvers:         make(map[eval.EventType]activeApprovers),
+		manager:           ebpf.NewRuntimeSecurityManager(),
 		managerOptions:    ebpf.NewDefaultOptions(),
 		regexCache:        regexCache,
 		ctx:               ctx,

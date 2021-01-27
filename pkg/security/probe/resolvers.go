@@ -36,7 +36,7 @@ type Resolvers struct {
 
 // NewResolvers creates a new instance of Resolvers
 func NewResolvers(probe *Probe, client *statsd.Client) (*Resolvers, error) {
-	dentryResolver, err := NewDentryResolver(probe)
+	dentryResolver, err := NewDentryResolver(client)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +130,7 @@ func (r *Resolvers) Start(ctx context.Context) error {
 		return err
 	}
 
-	return r.DentryResolver.Start()
+	return r.DentryResolver.Start(r.probe.manager)
 }
 
 // Snapshot collects data on the current state of the system to populate user space and kernel space caches.

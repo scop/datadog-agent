@@ -45,6 +45,15 @@ var (
 	// Tags: -
 	MetricConcurrentSyscall = newRuntimeSecurityMetric(".concurrent_syscalls")
 
+	// Dentry Resolver metrics
+
+	// MetricDentryResolverHits is the counter of successful dentry resolution
+	// Tags: cache, kernel_maps
+	MetricDentryResolverHits = newRuntimeSecurityMetric(".dentry_resolver.hits")
+	// MetricDentryResolverMiss is the counter of unsuccessful dentry resolution
+	// Tags: cache, kernel_maps
+	MetricDentryResolverMiss = newRuntimeSecurityMetric(".dentry_resolver.miss")
+
 	// Perf buffer metrics
 
 	// MetricPerfBufferLostWrite is the name of the metric used to count the number of lost events, as reported by a
@@ -104,6 +113,10 @@ var (
 	// MetricForkBomb is the name of the metric used to report the number of processes that crossed the fork bomb
 	// threshold. Tags: -
 	MetricForkBomb = newRuntimeSecurityMetric(".fork_bomb")
+
+	cacheTag      = []string{"type:cache"}
+	kernelMapsTag = []string{"type:kernel_maps"}
+	procFSTag     = []string{"type:procfs"}
 )
 
 func newRuntimeSecurityMetric(name string) string {
