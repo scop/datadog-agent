@@ -17,4 +17,9 @@ static __always_inline bool is_ipv4_mapped_ipv6(__u64 saddr_h, __u64 saddr_l, __
 #endif
 }
 
+static __always_inline void read_in6_addr(__u64* addr_h, __u64* addr_l, struct in6_addr* in6) {
+    bpf_probe_read(addr_h, sizeof(__u64), &(in6->in6_u.u6_addr32[0]));
+    bpf_probe_read(addr_l, sizeof(__u64), &(in6->in6_u.u6_addr32[2]));
+}
+
 #endif
