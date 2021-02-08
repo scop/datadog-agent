@@ -226,6 +226,29 @@ func easyjsonA970e379DecodeGithubComDataDogDatadogAgentPkgSecurityProbe1(in *jle
 					in.AddError((*out.ExitTime).UnmarshalJSON(data))
 				}
 			}
+		case "args":
+			if in.IsNull() {
+				in.Skip()
+				out.Args = nil
+			} else {
+				in.Delim('[')
+				if out.Args == nil {
+					if !in.IsDelim(']') {
+						out.Args = make([]string, 0, 4)
+					} else {
+						out.Args = []string{}
+					}
+				} else {
+					out.Args = (out.Args)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v2 string
+					v2 = string(in.String())
+					out.Args = append(out.Args, v2)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -256,14 +279,14 @@ func easyjsonA970e379EncodeGithubComDataDogDatadogAgentPkgSecurityProbe1(out *jw
 		}
 		{
 			out.RawByte('[')
-			for v2, v3 := range in.Ancestors {
-				if v2 > 0 {
+			for v3, v4 := range in.Ancestors {
+				if v3 > 0 {
 					out.RawByte(',')
 				}
-				if v3 == nil {
+				if v4 == nil {
 					out.RawString("null")
 				} else {
-					(*v3).MarshalEasyJSON(out)
+					(*v4).MarshalEasyJSON(out)
 				}
 			}
 			out.RawByte(']')
@@ -449,6 +472,25 @@ func easyjsonA970e379EncodeGithubComDataDogDatadogAgentPkgSecurityProbe1(out *jw
 		}
 		out.Raw((*in.ExitTime).MarshalJSON())
 	}
+	if len(in.Args) != 0 {
+		const prefix string = ",\"args\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		{
+			out.RawByte('[')
+			for v5, v6 := range in.Args {
+				if v5 > 0 {
+					out.RawByte(',')
+				}
+				out.String(string(v6))
+			}
+			out.RawByte(']')
+		}
+	}
 	out.RawByte('}')
 }
 
@@ -559,6 +601,29 @@ func easyjsonA970e379DecodeGithubComDataDogDatadogAgentPkgSecurityProbe2(in *jle
 				if data := in.Raw(); in.Ok() {
 					in.AddError((*out.ExitTime).UnmarshalJSON(data))
 				}
+			}
+		case "args":
+			if in.IsNull() {
+				in.Skip()
+				out.Args = nil
+			} else {
+				in.Delim('[')
+				if out.Args == nil {
+					if !in.IsDelim(']') {
+						out.Args = make([]string, 0, 4)
+					} else {
+						out.Args = []string{}
+					}
+				} else {
+					out.Args = (out.Args)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v7 string
+					v7 = string(in.String())
+					out.Args = append(out.Args, v7)
+					in.WantComma()
+				}
+				in.Delim(']')
 			}
 		default:
 			in.SkipRecursive()
@@ -750,6 +815,25 @@ func easyjsonA970e379EncodeGithubComDataDogDatadogAgentPkgSecurityProbe2(out *jw
 		}
 		out.Raw((*in.ExitTime).MarshalJSON())
 	}
+	if len(in.Args) != 0 {
+		const prefix string = ",\"args\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		{
+			out.RawByte('[')
+			for v8, v9 := range in.Args {
+				if v8 > 0 {
+					out.RawByte(',')
+				}
+				out.String(string(v9))
+			}
+			out.RawByte(']')
+		}
+	}
 	out.RawByte('}')
 }
 
@@ -883,9 +967,9 @@ func easyjsonA970e379DecodeGithubComDataDogDatadogAgentPkgSecurityProbe3(in *jle
 					out.Flags = (out.Flags)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v4 string
-					v4 = string(in.String())
-					out.Flags = append(out.Flags, v4)
+					var v10 string
+					v10 = string(in.String())
+					out.Flags = append(out.Flags, v10)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -1054,11 +1138,11 @@ func easyjsonA970e379EncodeGithubComDataDogDatadogAgentPkgSecurityProbe3(out *jw
 		}
 		{
 			out.RawByte('[')
-			for v5, v6 := range in.Flags {
-				if v5 > 0 {
+			for v11, v12 := range in.Flags {
+				if v11 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v6))
+				out.String(string(v12))
 			}
 			out.RawByte(']')
 		}
@@ -1234,9 +1318,9 @@ func easyjsonA970e379DecodeGithubComDataDogDatadogAgentPkgSecurityProbe4(in *jle
 					out.Flags = (out.Flags)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v7 string
-					v7 = string(in.String())
-					out.Flags = append(out.Flags, v7)
+					var v13 string
+					v13 = string(in.String())
+					out.Flags = append(out.Flags, v13)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -1455,11 +1539,11 @@ func easyjsonA970e379EncodeGithubComDataDogDatadogAgentPkgSecurityProbe4(out *jw
 		}
 		{
 			out.RawByte('[')
-			for v8, v9 := range in.Flags {
-				if v8 > 0 {
+			for v14, v15 := range in.Flags {
+				if v14 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v9))
+				out.String(string(v15))
 			}
 			out.RawByte(']')
 		}

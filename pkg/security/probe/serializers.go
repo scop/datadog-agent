@@ -71,6 +71,7 @@ type ProcessCacheEntrySerializer struct {
 	ForkTime            *time.Time `json:"fork_time,omitempty"`
 	ExecTime            *time.Time `json:"exec_time,omitempty"`
 	ExitTime            *time.Time `json:"exit_time,omitempty"`
+	Args                []string   `json:"args,omitempty"`
 }
 
 // ContainerContextSerializer serializes a container context to JSON
@@ -172,8 +173,9 @@ func getTimeIfNotZero(t time.Time) *time.Time {
 func newProcessCacheEntrySerializer(pce *model.ProcessCacheEntry, e *Event, r *Resolvers, useEvent bool) *ProcessCacheEntrySerializer {
 	var pid, ppid, tid, uid, gid uint32
 	var user, group string
+	var args []string
 
-	if useEvent && e != nil {
+	if useEvent {
 		pid = e.Process.Pid
 		ppid = e.Process.PPid
 		tid = e.Process.Tid
@@ -181,6 +183,7 @@ func newProcessCacheEntrySerializer(pce *model.ProcessCacheEntry, e *Event, r *R
 		gid = e.Process.GID
 		user = e.ResolveProcessUser(&e.Process)
 		group = e.ResolveProcessGroup(&e.Process)
+		args = e.Process.Args
 	} else {
 		pid = pce.Pid
 		ppid = pce.PPid
@@ -189,6 +192,7 @@ func newProcessCacheEntrySerializer(pce *model.ProcessCacheEntry, e *Event, r *R
 		gid = pce.GID
 		user = e.ResolveExecUser(&pce.ProcessContext.ExecEvent)
 		group = e.ResolveExecGroup(&pce.ProcessContext.ExecEvent)
+		args = pce.Args
 	}
 
 	return &ProcessCacheEntrySerializer{
@@ -210,6 +214,7 @@ func newProcessCacheEntrySerializer(pce *model.ProcessCacheEntry, e *Event, r *R
 		ForkTime:            getTimeIfNotZero(pce.ForkTime),
 		ExecTime:            getTimeIfNotZero(pce.ExecTime),
 		ExitTime:            getTimeIfNotZero(pce.ExitTime),
+		Args:                args,
 	}
 }
 
