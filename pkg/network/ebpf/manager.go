@@ -69,7 +69,6 @@ func NewManager(closedHandler, httpHandler *ebpf.PerfHandler, runtimeTracer bool
 		},
 		Probes: []*manager.Probe{
 			{Section: string(probes.TCPSendMsg)},
-			{Section: string(probes.TCPSendMsgPre410), MatchFuncName: "^tcp_sendmsg$"},
 			{Section: string(probes.TCPSendMsgReturn), KProbeMaxActive: maxActive},
 			{Section: string(probes.TCPCleanupRBuf)},
 			{Section: string(probes.TCPClose)},
@@ -78,7 +77,6 @@ func NewManager(closedHandler, httpHandler *ebpf.PerfHandler, runtimeTracer bool
 			{Section: string(probes.IPMakeSkb)},
 			{Section: string(probes.IP6MakeSkb)},
 			{Section: string(probes.UDPRecvMsg)},
-			{Section: string(probes.UDPRecvMsgPre410), MatchFuncName: "^udp_recvmsg$"},
 			{Section: string(probes.UDPRecvMsgReturn), KProbeMaxActive: maxActive},
 			{Section: string(probes.TCPRetransmit)},
 			{Section: string(probes.InetCskAcceptReturn), KProbeMaxActive: maxActive},
@@ -98,7 +96,11 @@ func NewManager(closedHandler, httpHandler *ebpf.PerfHandler, runtimeTracer bool
 	// do that with #ifdefs inline. Thus the following probes should only be declared as existing in the prebuilt
 	// tracer.
 	if !runtimeTracer {
-		mgr.Probes = append(mgr.Probes, &manager.Probe{Section: string(probes.TCPRetransmitPre470), MatchFuncName: "^tcp_retransmit_skb$"})
+		mgr.Probes = append(mgr.Probes,
+			&manager.Probe{Section: string(probes.TCPSendMsgPre410), MatchFuncName: "^tcp_sendmsg$"},
+			&manager.Probe{Section: string(probes.UDPRecvMsgPre410), MatchFuncName: "^udp_recvmsg$"},
+			&manager.Probe{Section: string(probes.TCPRetransmitPre470), MatchFuncName: "^tcp_retransmit_skb$"},
+		)
 	}
 
 	return mgr
