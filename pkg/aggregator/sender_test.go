@@ -115,7 +115,8 @@ func TestGetAndSetSender(t *testing.T) {
 	serviceCheckChan := make(chan metrics.ServiceCheck, 10)
 	eventChan := make(chan metrics.Event, 10)
 	bucketChan := make(chan senderHistogramBucket, 10)
-	testCheckSender := newCheckSender(checkID1, "", senderMetricSampleChan, serviceCheckChan, eventChan, bucketChan)
+	orchestratorChan := make(chan senderOrchestratorMetadata, 10)
+	testCheckSender := newCheckSender(checkID1, "", senderMetricSampleChan, serviceCheckChan, eventChan, bucketChan, orchestratorChan)
 
 	err := SetSender(testCheckSender, checkID1)
 	assert.Nil(t, err)
@@ -147,7 +148,8 @@ func TestGetSenderServiceTagMetrics(t *testing.T) {
 	serviceCheckChan := make(chan metrics.ServiceCheck, 10)
 	eventChan := make(chan metrics.Event, 10)
 	bucketChan := make(chan senderHistogramBucket, 10)
-	checkSender := newCheckSender(checkID1, "", senderMetricSampleChan, serviceCheckChan, eventChan, bucketChan)
+	orchestratorChan := make(chan senderOrchestratorMetadata, 10)
+	checkSender := newCheckSender(checkID1, "", senderMetricSampleChan, serviceCheckChan, eventChan, bucketChan, orchestratorChan)
 	checkTags := []string{"check:tag1", "check:tag2"}
 
 	// only tags added by the check
@@ -174,7 +176,8 @@ func TestGetSenderServiceTagServiceCheck(t *testing.T) {
 	serviceCheckChan := make(chan metrics.ServiceCheck, 10)
 	eventChan := make(chan metrics.Event, 10)
 	bucketChan := make(chan senderHistogramBucket, 10)
-	checkSender := newCheckSender(checkID1, "", senderMetricSampleChan, serviceCheckChan, eventChan, bucketChan)
+	orchestratorChan := make(chan senderOrchestratorMetadata, 10)
+	checkSender := newCheckSender(checkID1, "", senderMetricSampleChan, serviceCheckChan, eventChan, bucketChan, orchestratorChan)
 	checkTags := []string{"check:tag1", "check:tag2"}
 
 	// only tags added by the check
@@ -201,7 +204,8 @@ func TestGetSenderServiceTagEvent(t *testing.T) {
 	serviceCheckChan := make(chan metrics.ServiceCheck, 10)
 	eventChan := make(chan metrics.Event, 10)
 	bucketChan := make(chan senderHistogramBucket, 10)
-	checkSender := newCheckSender(checkID1, "", senderMetricSampleChan, serviceCheckChan, eventChan, bucketChan)
+	orchestratorChan := make(chan senderOrchestratorMetadata, 10)
+	checkSender := newCheckSender(checkID1, "", senderMetricSampleChan, serviceCheckChan, eventChan, bucketChan, orchestratorChan)
 	checkTags := []string{"check:tag1", "check:tag2"}
 
 	event := metrics.Event{
@@ -236,7 +240,8 @@ func TestGetSenderAddCheckCustomTagsMetrics(t *testing.T) {
 	serviceCheckChan := make(chan metrics.ServiceCheck, 10)
 	eventChan := make(chan metrics.Event, 10)
 	bucketChan := make(chan senderHistogramBucket, 10)
-	checkSender := newCheckSender(checkID1, "", senderMetricSampleChan, serviceCheckChan, eventChan, bucketChan)
+	orchestratorChan := make(chan senderOrchestratorMetadata, 10)
+	checkSender := newCheckSender(checkID1, "", senderMetricSampleChan, serviceCheckChan, eventChan, bucketChan, orchestratorChan)
 
 	// no custom tags
 	checkSender.sendMetricSample("metric.test", 42.0, "testhostname", nil, metrics.CounterType, false)
@@ -273,7 +278,8 @@ func TestGetSenderAddCheckCustomTagsService(t *testing.T) {
 	serviceCheckChan := make(chan metrics.ServiceCheck, 10)
 	eventChan := make(chan metrics.Event, 10)
 	bucketChan := make(chan senderHistogramBucket, 10)
-	checkSender := newCheckSender(checkID1, "", senderMetricSampleChan, serviceCheckChan, eventChan, bucketChan)
+	orchestratorChan := make(chan senderOrchestratorMetadata, 10)
+	checkSender := newCheckSender(checkID1, "", senderMetricSampleChan, serviceCheckChan, eventChan, bucketChan, orchestratorChan)
 
 	// no custom tags
 	checkSender.ServiceCheck("test", metrics.ServiceCheckOK, "testhostname", nil, "test message")
@@ -310,7 +316,8 @@ func TestGetSenderAddCheckCustomTagsEvent(t *testing.T) {
 	serviceCheckChan := make(chan metrics.ServiceCheck, 10)
 	eventChan := make(chan metrics.Event, 10)
 	bucketChan := make(chan senderHistogramBucket, 10)
-	checkSender := newCheckSender(checkID1, "", senderMetricSampleChan, serviceCheckChan, eventChan, bucketChan)
+	orchestratorChan := make(chan senderOrchestratorMetadata, 10)
+	checkSender := newCheckSender(checkID1, "", senderMetricSampleChan, serviceCheckChan, eventChan, bucketChan, orchestratorChan)
 
 	event := metrics.Event{
 		Title: "title",
@@ -358,7 +365,8 @@ func TestGetSenderAddCheckCustomTagsHistogramBucket(t *testing.T) {
 	serviceCheckChan := make(chan metrics.ServiceCheck, 10)
 	eventChan := make(chan metrics.Event, 10)
 	bucketChan := make(chan senderHistogramBucket, 10)
-	checkSender := newCheckSender(checkID1, "", senderMetricSampleChan, serviceCheckChan, eventChan, bucketChan)
+	orchestratorChan := make(chan senderOrchestratorMetadata, 10)
+	checkSender := newCheckSender(checkID1, "", senderMetricSampleChan, serviceCheckChan, eventChan, bucketChan, orchestratorChan)
 
 	// no custom tags
 	checkSender.HistogramBucket("my.histogram_bucket", 42, 1.0, 2.0, true, "my-hostname", nil)
@@ -392,7 +400,8 @@ func TestCheckSenderInterface(t *testing.T) {
 	serviceCheckChan := make(chan metrics.ServiceCheck, 10)
 	eventChan := make(chan metrics.Event, 10)
 	bucketChan := make(chan senderHistogramBucket, 10)
-	checkSender := newCheckSender(checkID1, "default-hostname", senderMetricSampleChan, serviceCheckChan, eventChan, bucketChan)
+	orchestratorChan := make(chan senderOrchestratorMetadata, 10)
+	checkSender := newCheckSender(checkID1, "default-hostname", senderMetricSampleChan, serviceCheckChan, eventChan, bucketChan, orchestratorChan)
 	checkSender.Gauge("my.metric", 1.0, "my-hostname", []string{"foo", "bar"})
 	checkSender.Rate("my.rate_metric", 2.0, "my-hostname", []string{"foo", "bar"})
 	checkSender.Count("my.count_metric", 123.0, "my-hostname", []string{"foo", "bar"})
@@ -511,7 +520,8 @@ func TestCheckSenderHostname(t *testing.T) {
 			serviceCheckChan := make(chan metrics.ServiceCheck, 10)
 			eventChan := make(chan metrics.Event, 10)
 			bucketChan := make(chan senderHistogramBucket, 10)
-			checkSender := newCheckSender(checkID1, defaultHostname, senderMetricSampleChan, serviceCheckChan, eventChan, bucketChan)
+			orchestratorChan := make(chan senderOrchestratorMetadata, 10)
+			checkSender := newCheckSender(checkID1, defaultHostname, senderMetricSampleChan, serviceCheckChan, eventChan, bucketChan, orchestratorChan)
 			checkSender.DisableDefaultHostname(tc.defaultHostnameDisabled)
 
 			checkSender.Gauge("my.metric", 1.0, tc.submittedHostname, []string{"foo", "bar"})
@@ -557,7 +567,8 @@ func TestChangeAllSendersDefaultHostname(t *testing.T) {
 	serviceCheckChan := make(chan metrics.ServiceCheck, 10)
 	eventChan := make(chan metrics.Event, 10)
 	bucketChan := make(chan senderHistogramBucket, 10)
-	checkSender := newCheckSender(checkID1, "hostname1", senderMetricSampleChan, serviceCheckChan, eventChan, bucketChan)
+	orchestratorChan := make(chan senderOrchestratorMetadata, 10)
+	checkSender := newCheckSender(checkID1, "hostname1", senderMetricSampleChan, serviceCheckChan, eventChan, bucketChan, orchestratorChan)
 	SetSender(checkSender, checkID1)
 
 	checkSender.Gauge("my.metric", 1.0, "", nil)
