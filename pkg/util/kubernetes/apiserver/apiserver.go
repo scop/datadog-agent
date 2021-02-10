@@ -12,6 +12,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	v1 "k8s.io/api/core/v1"
@@ -39,11 +40,12 @@ import (
 )
 
 var (
-	globalAPIClient  *APIClient
-	ErrNotFound      = errors.New("entity not found")
-	ErrIsEmpty       = errors.New("entity is empty")
-	ErrNotLeader     = errors.New("not Leader")
-	isConnectVerbose = false
+	globalAPIClient     *APIClient
+	globalAPIClientOnce sync.Once
+	ErrNotFound         = errors.New("entity not found")
+	ErrIsEmpty          = errors.New("entity is empty")
+	ErrNotLeader        = errors.New("not Leader")
+	isConnectVerbose    = false
 )
 
 const (
@@ -90,20 +92,25 @@ type APIClient struct {
 	timeoutSeconds int64
 }
 
-// GetAPIClient returns the shared ApiClient instance.
-func GetAPIClient() (*APIClient, error) {
-	if globalAPIClient == nil {
-		globalAPIClient = &APIClient{
-			timeoutSeconds: config.Datadog.GetInt64("kubernetes_apiserver_client_timeout"),
-		}
-		globalAPIClient.initRetry.SetupRetrier(&retry.Config{ //nolint:errcheck
-			Name:              "apiserver",
-			AttemptMethod:     globalAPIClient.connect,
-			Strategy:          retry.Backoff,
-			InitialRetryDelay: 1 * time.Second,
-			MaxRetryDelay:     5 * time.Minute,
-		})
+func initAPIClient() {
+	globalAPIClient = &APIClient{
+		timeoutSeconds: config.Datadog.GetInt64("kubernetes_apiserver_client_timeout"),
 	}
+	globalAPIClient.initRetry.SetupRetrier(&retry.Config{ //nolint:errcheck
+		Name:              "apiserver",
+		AttemptMethod:     globalAPIClient.connect,
+		Strategy:          retry.Backoff,
+		InitialRetryDelay: 1 * time.Second,
+		MaxRetryDelay:     5 * time.Minute,
+	})
+}
+
+// GetAPIClient returns the shared APIClient if already set
+// it will trigger a retry if not, but won't wait until retries are exhausted
+// See `WaitForAPIClient()` for a method that waits until APIClient is ready
+func GetAPIClient() (*APIClient, error) {
+	globalAPIClientOnce.Do(initAPIClient)
+
 	err := globalAPIClient.initRetry.TriggerRetry()
 	if err != nil {
 		log.Debugf("API Server init error: %s", err)
@@ -112,10 +119,9 @@ func GetAPIClient() (*APIClient, error) {
 	return globalAPIClient, nil
 }
 
+// WaitForAPIClient waits for availability of APIServer Client before returning
 func WaitForAPIClient(ctx context.Context) (*APIClient, error) {
-	if globalAPIClient == nil {
-		_, _ = GetAPIClient()
-	}
+	globalAPIClientOnce.Do(initAPIClient)
 
 	for {
 		_ = globalAPIClient.initRetry.TriggerRetry()
