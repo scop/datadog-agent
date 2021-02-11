@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/DataDog/datadog-agent/pkg/trace/pb"
 	"github.com/DataDog/datadog-agent/pkg/trace/watchdog"
 	"github.com/DataDog/datadog-agent/pkg/util/log"
 )
@@ -32,19 +33,18 @@ type Concentrator struct {
 	// wait such time before flushing the stats.
 	// This only applies to past buckets. Stats buckets in the future are allowed with no restriction.
 	bufferLen int
-
-	In  chan []Input
-	Out chan []Bucket
-
-	exit   chan struct{}
-	exitWG *sync.WaitGroup
-
-	buckets map[int64]*RawBucket // buckets used to aggregate stats per timestamp
-	mu      sync.Mutex
+	In        chan []Input
+	Out       chan []*pb.ClientStatsPayload
+	exit      chan struct{}
+	exitWG    *sync.WaitGroup
+	buckets   map[int64]*RawBucket // buckets used to aggregate stats per timestamp
+	mu        sync.Mutex
+	env       string
+	hostname  string
 }
 
 // NewConcentrator initializes a new concentrator ready to be started
-func NewConcentrator(bsize int64, out chan []Bucket, now time.Time) *Concentrator {
+func NewConcentrator(bsize int64, out chan []*pb.ClientStatsPayload, now time.Time, env, hostname string) *Concentrator {
 	c := Concentrator{
 		bsize:   bsize,
 		buckets: make(map[int64]*RawBucket),
@@ -53,12 +53,12 @@ func NewConcentrator(bsize int64, out chan []Bucket, now time.Time) *Concentrato
 		oldestTs: alignTs(now.UnixNano(), bsize),
 		// TODO: Move to configuration.
 		bufferLen: defaultBufferLen,
-
-		In:  make(chan []Input, 100),
-		Out: out,
-
-		exit:   make(chan struct{}),
-		exitWG: &sync.WaitGroup{},
+		In:        make(chan []Input, 100),
+		Out:       out,
+		exit:      make(chan struct{}),
+		exitWG:    &sync.WaitGroup{},
+		env:       env,
+		hostname:  hostname,
 	}
 	return &c
 }
@@ -127,6 +127,10 @@ func (c *Concentrator) Add(inputs []Input) {
 // addNow adds the given input into the concentrator.
 // Callers must guard!
 func (c *Concentrator) addNow(i *Input) {
+	env := i.Env
+	if env == "" {
+		env = c.env
+	}
 	for _, s := range i.Trace {
 		if !(s.TopLevel || s.Measured) {
 			continue
@@ -141,20 +145,20 @@ func (c *Concentrator) addNow(i *Input) {
 
 		b, ok := c.buckets[btime]
 		if !ok {
-			b = NewRawBucket(btime, c.bsize)
+			b = NewRawBucket(uint64(btime), uint64(c.bsize))
 			c.buckets[btime] = b
 		}
-		b.HandleSpan(s, i.Env)
+		b.HandleSpan(s, env, c.hostname)
 	}
 }
 
 // Flush deletes and returns complete statistic buckets
-func (c *Concentrator) Flush() []Bucket {
+func (c *Concentrator) Flush() []*pb.ClientStatsPayload {
 	return c.flushNow(time.Now().UnixNano())
 }
 
-func (c *Concentrator) flushNow(now int64) []Bucket {
-	var sb []Bucket
+func (c *Concentrator) flushNow(now int64) []*pb.ClientStatsPayload {
+	m := make(map[PayloadKey][]pb.ClientStatsBucket)
 
 	c.mu.Lock()
 	for ts, srb := range c.buckets {
@@ -165,10 +169,11 @@ func (c *Concentrator) flushNow(now int64) []Bucket {
 			continue
 		}
 		log.Debugf("flushing bucket %d", ts)
-		sb = append(sb, srb.Export())
+		for k, b := range srb.Export() {
+			m[k] = append(m[k], b)
+		}
 		delete(c.buckets, ts)
 	}
-
 	// After flushing, update the oldest timestamp allowed to prevent having stats for
 	// an already-flushed bucket.
 	newOldestTs := alignTs(now, c.bsize) - int64(c.bufferLen-1)*c.bsize
@@ -176,9 +181,16 @@ func (c *Concentrator) flushNow(now int64) []Bucket {
 		log.Debugf("update oldestTs to %d", newOldestTs)
 		c.oldestTs = newOldestTs
 	}
-
 	c.mu.Unlock()
-
+	sb := make([]*pb.ClientStatsPayload, 0, len(m))
+	for k, s := range m {
+		sb = append(sb, &pb.ClientStatsPayload{
+			Env:      k.env,
+			Hostname: k.hostname,
+			Version:  k.version,
+			Stats:    s,
+		})
+	}
 	return sb
 }
 

@@ -7,7 +7,6 @@ package writer
 
 import (
 	"compress/gzip"
-	"encoding/json"
 	"math"
 	"math/rand"
 	"strings"
@@ -15,10 +14,12 @@ import (
 
 	"github.com/DataDog/datadog-agent/pkg/trace/config"
 	"github.com/DataDog/datadog-agent/pkg/trace/info"
+	"github.com/DataDog/datadog-agent/pkg/trace/pb"
 	"github.com/DataDog/datadog-agent/pkg/trace/stats"
 	"github.com/DataDog/datadog-agent/pkg/trace/test/testutil"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/tinylib/msgp/msgp"
 )
 
 const (
@@ -32,17 +33,25 @@ func TestStatsWriter(t *testing.T) {
 		sw, statsChannel, srv := testStatsWriter()
 		go sw.Run()
 
-		testSets := [][]stats.Bucket{
-			{
-				testutil.RandomBucket(3),
-				testutil.RandomBucket(3),
-				testutil.RandomBucket(3),
-			},
-			{
-				testutil.RandomBucket(3),
-				testutil.RandomBucket(3),
-				testutil.RandomBucket(3),
-			},
+		testSets := [][]*pb.ClientStatsPayload{
+			{{
+				Hostname: testHostname,
+				Env:      testEnv,
+				Stats: []pb.ClientStatsBucket{
+					testutil.RandomBucket(3),
+					testutil.RandomBucket(3),
+					testutil.RandomBucket(3),
+				},
+			}},
+			{{
+				Hostname: testHostname,
+				Env:      testEnv,
+				Stats: []pb.ClientStatsBucket{
+					testutil.RandomBucket(3),
+					testutil.RandomBucket(3),
+					testutil.RandomBucket(3),
+				},
+			}},
 		}
 
 		statsChannel <- testSets[0]
@@ -52,11 +61,21 @@ func TestStatsWriter(t *testing.T) {
 
 		expectedHeaders := map[string]string{
 			"X-Datadog-Reported-Languages": strings.Join(info.Languages(), "|"),
-			"Content-Type":                 "application/json",
+			"Content-Type":                 "application/msgpack",
 			"Content-Encoding":             "gzip",
 			"Dd-Api-Key":                   "123",
 		}
-		assertPayload(assert, expectedHeaders, testSets, srv.Payloads())
+		for i, p := range srv.Payloads() {
+			var statsPayload pb.ClientStatsPayload
+			r, err := gzip.NewReader(p.body)
+			assert.NoError(err)
+			err = msgp.Decode(r, &statsPayload)
+			assert.NoError(err)
+			for k, v := range expectedHeaders {
+				assert.Equal(v, p.headers[k])
+			}
+			assert.Equal(*testSets[i][0], statsPayload)
+		}
 	})
 
 	t.Run("buildPayloads", func(t *testing.T) {
@@ -66,14 +85,16 @@ func TestStatsWriter(t *testing.T) {
 			// This gives us a total of 45 entries. 3 per span, 5
 			// spans per stat bucket. Each buckets have the same
 			// time window (start: 0, duration 1e9).
-			stats := []stats.Bucket{
-				testutil.RandomBucket(5),
-				testutil.RandomBucket(5),
-				testutil.RandomBucket(5),
+			stats := &pb.ClientStatsPayload{
+				Hostname: testHostname,
+				Env:      testEnv,
+				Stats: []pb.ClientStatsBucket{
+					testutil.RandomBucket(5),
+					testutil.RandomBucket(5),
+					testutil.RandomBucket(5),
+				},
 			}
-			// Remove duplicates so that we have a predictable state. In another
-			// case we'll test with duplicates.
-			expectedNbEntries := removeDuplicateEntries(stats)
+			expectedNbEntries := 15
 			expectedNbPayloads := int(math.Ceil(float64(expectedNbEntries) / 12))
 			// Compute our expected number of entries by payload
 			expectedNbEntriesByPayload := make([]int, expectedNbPayloads)
@@ -81,78 +102,16 @@ func TestStatsWriter(t *testing.T) {
 				expectedNbEntriesByPayload[i%expectedNbPayloads]++
 			}
 
-			expectedCounts := countsByEntries(stats)
 			payloads, nbStatBuckets, nbEntries := sw.buildPayloads(stats, 12)
 
 			assert.Equal(expectedNbPayloads, len(payloads))
 			assert.Equal(expectedNbPayloads, nbStatBuckets)
 			assert.Equal(expectedNbEntries, nbEntries)
-
 			for i := 0; i < expectedNbPayloads; i++ {
 				assert.Equal(1, len(payloads[i].Stats))
-				assert.Equal(expectedNbEntriesByPayload[i], len(payloads[i].Stats[0].Counts))
+				assert.Equal(expectedNbEntriesByPayload[i], len(payloads[i].Stats[0].Stats))
 			}
-
-			assertCountByEntries(assert, expectedCounts, payloads)
-		})
-
-		t.Run("dupes", func(t *testing.T) {
-			// TODO(gbbr): Check why the changes in #6597 to the span generator
-			// in the test package affect this flakey test and re-enable it.
-			t.Skip()
-			rand.Seed(55)
-			assert := assert.New(t)
-			sw, _, _ := testStatsWriter()
-			// This gives us a total of 45 entries. 3 per span, 5
-			// spans per stat bucket. Each buckets have the same
-			// time window (start: 0, duration 1e9).
-			stats := []stats.Bucket{
-				testutil.RandomBucket(5),
-				testutil.RandomBucket(5),
-				testutil.RandomBucket(5),
-			}
-			// Remove duplicates so that we have a predictable
-			// state.
-			expectedNbEntries := removeDuplicateEntries(stats)
-			// Ensure we have 45 - 2 entries, as we'll duplicate 2
-			// of them.
-			for ekey := range stats[0].Counts {
-				if expectedNbEntries == 43 {
-					break
-				}
-
-				delete(stats[0].Counts, ekey)
-				expectedNbEntries--
-			}
-			// Force 2 duplicates
-			i := 0
-			for ekey, e := range stats[0].Counts {
-				if i >= 2 {
-					break
-				}
-				stats[1].Counts[ekey] = e
-				i++
-			}
-
-			expectedNbPayloads := int(math.Ceil(float64(expectedNbEntries) / 12))
-			// Compute our expected number of entries by payload
-			expectedNbEntriesByPayload := make([]int, expectedNbPayloads)
-			for i := 0; i < expectedNbEntries; i++ {
-				expectedNbEntriesByPayload[i%expectedNbPayloads]++
-			}
-
-			expectedCounts := countsByEntries(stats)
-			payloads, nbStatBuckets, nbEntries := sw.buildPayloads(stats, 12)
-
-			assert.Equal(expectedNbPayloads, len(payloads))
-			assert.Equal(expectedNbPayloads, nbStatBuckets)
-			assert.Equal(expectedNbEntries, nbEntries)
-
-			for i := 0; i < expectedNbPayloads; i++ {
-				assert.Equal(1, len(payloads[i].Stats))
-				assert.Equal(expectedNbEntriesByPayload[i], len(payloads[i].Stats[0].Counts))
-			}
-			assertCountByEntries(assert, expectedCounts, payloads)
+			assert.Equal(extractCounts([]*pb.ClientStatsPayload{stats}), extractCounts(payloads))
 		})
 
 		t.Run("no-split", func(t *testing.T) {
@@ -163,101 +122,80 @@ func TestStatsWriter(t *testing.T) {
 			// This gives us a tota of 45 entries. 3 per span, 5 spans per
 			// stat bucket. Each buckets have the same time window (start:
 			// 0, duration 1e9).
-			stats := []stats.Bucket{
-				testutil.RandomBucket(5),
-				testutil.RandomBucket(5),
-				testutil.RandomBucket(5),
+			stats := &pb.ClientStatsPayload{
+				Hostname: testHostname,
+				Env:      testEnv,
+				Stats: []pb.ClientStatsBucket{
+					testutil.RandomBucket(5),
+					testutil.RandomBucket(5),
+					testutil.RandomBucket(5),
+				},
 			}
 
 			payloads, nbStatBuckets, nbEntries := sw.buildPayloads(stats, 1337)
 
 			assert.Equal(1, len(payloads))
 			assert.Equal(3, nbStatBuckets)
-			assert.Equal(45, nbEntries)
+			assert.Equal(15, nbEntries)
 
 			assert.Equal(3, len(payloads[0].Stats))
-			assert.Equal(15, len(payloads[0].Stats[0].Counts))
-			assert.Equal(15, len(payloads[0].Stats[1].Counts))
-			assert.Equal(15, len(payloads[0].Stats[2].Counts))
+			assert.Equal(5, len(payloads[0].Stats[0].Stats))
+			assert.Equal(5, len(payloads[0].Stats[1].Stats))
+			assert.Equal(5, len(payloads[0].Stats[2].Stats))
 		})
 	})
 }
 
-func testStatsWriter() (*StatsWriter, chan []stats.Bucket, *testServer) {
+func testStatsWriter() (*StatsWriter, chan []*pb.ClientStatsPayload, *testServer) {
 	srv := newTestServer()
 	// We use a blocking channel to make sure that sends get received on the
 	// other end.
-	in := make(chan []stats.Bucket)
+	in := make(chan []*pb.ClientStatsPayload)
 	cfg := &config.AgentConfig{
-		Hostname:    testHostname,
-		DefaultEnv:  testEnv,
 		Endpoints:   []*config.Endpoint{{Host: srv.URL, APIKey: "123"}},
 		StatsWriter: &config.WriterConfig{ConnectionLimit: 20, QueueSize: 20},
 	}
 	return NewStatsWriter(cfg, in), in, srv
 }
 
-func removeDuplicateEntries(stats []stats.Bucket) int {
-	var n int
-	entries := make(map[string]struct{}, 45)
-	for _, s := range stats {
-		for ekey := range s.Counts {
-			if _, ok := entries[ekey]; !ok {
-				entries[ekey] = struct{}{}
-				n++
-			} else {
-				delete(s.Counts, ekey)
-			}
-		}
-	}
-	return n
+type key struct {
+	stats.Aggregation
+	start    uint64
+	duration uint64
 }
 
-func countsByEntries(stats []stats.Bucket) map[string]float64 {
-	counts := make(map[string]float64)
-	for _, s := range stats {
-		for k, c := range s.Counts {
-			v, ok := counts[k]
-			if !ok {
-				v = 0
+type counts struct {
+	errors   uint64
+	hits     uint64
+	duration uint64
+}
+
+func getKey(b pb.ClientGroupedStats, start, duration uint64) key {
+	return key{
+		start:    start,
+		duration: duration,
+		Aggregation: stats.Aggregation{
+			Resource:   b.Resource,
+			Service:    b.Service,
+			Type:       b.Type,
+			StatusCode: b.HTTPStatusCode,
+			Synthetics: b.Synthetics,
+		},
+	}
+}
+
+func extractCounts(stats []*pb.ClientStatsPayload) map[key]counts {
+	counts := make(map[key]counts)
+	for _, p := range stats {
+		for _, b := range p.Stats {
+			for _, g := range b.Stats {
+				k := getKey(g, b.Start, b.Duration)
+				c := counts[k]
+				c.duration += g.Duration
+				c.hits += g.Hits
+				c.errors += g.Errors
 			}
-			v += c.Value
-			counts[k] = v
 		}
 	}
 	return counts
-}
-
-func assertCountByEntries(assert *assert.Assertions, expectedCounts map[string]float64, payloads []*stats.Payload) {
-	actualCounts := make(map[string]float64)
-	for _, p := range payloads {
-		for _, s := range p.Stats {
-			for ekey, e := range s.Counts {
-				v, ok := actualCounts[ekey]
-				if !ok {
-					v = 0
-				}
-				v += e.Value
-				actualCounts[ekey] = v
-			}
-		}
-	}
-	assert.Equal(expectedCounts, actualCounts)
-}
-
-func assertPayload(assert *assert.Assertions, headers map[string]string, bucketsSet [][]stats.Bucket, payloads []*payload) {
-	for _, p := range payloads {
-		var statsPayload stats.Payload
-		r, err := gzip.NewReader(p.body)
-		assert.NoError(err)
-		err = json.NewDecoder(r).Decode(&statsPayload)
-		assert.NoError(err)
-
-		for k, v := range headers {
-			assert.Equal(v, p.headers[k])
-		}
-		assert.Equal(testHostname, statsPayload.HostName)
-		assert.Equal(testEnv, statsPayload.Env)
-		assert.Contains(bucketsSet, statsPayload.Stats)
-	}
 }

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/DataDog/datadog-agent/pkg/trace/stats"
+	"github.com/DataDog/datadog-agent/pkg/trace/pb"
 	"github.com/DataDog/datadog-agent/pkg/trace/test"
 	"github.com/DataDog/datadog-agent/pkg/trace/test/testsuite/testdata"
 )
@@ -36,7 +36,7 @@ func TestClientStats(t *testing.T) {
 			for {
 				select {
 				case p := <-out:
-					got, ok := p.(stats.Payload)
+					got, ok := p.(pb.ClientStatsPayload)
 					if !ok {
 						continue
 					}
