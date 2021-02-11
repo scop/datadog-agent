@@ -75,18 +75,20 @@ int __attribute__((always_inline)) handle_exec_event(struct pt_regs *ctx, struct
     struct path *path = &file->f_path;
 
     syscall->open.dentry = get_file_dentry(file);
-    syscall->open.path_key = get_inode_key_path(inode, &file->f_path);
-    syscall->open.path_key.path_id = get_path_id(0);
+    syscall->open.file.path_key = get_inode_key_path(inode, &file->f_path);
+    syscall->open.file.path_key.path_id = get_path_id(0);
 
     u64 pid_tgid = bpf_get_current_pid_tgid();
     u32 tgid = pid_tgid >> 32;
 
     struct proc_cache_t entry = {
         .executable = {
-            .inode = syscall->open.path_key.ino,
-            .overlay_numlower = get_overlay_numlower(get_path_dentry(path)),
-            .mount_id = get_path_mount_id(path),
-            .path_id = syscall->open.path_key.path_id,
+            .path_key = {
+                .ino = syscall->open.file.path_key.ino,
+                .mount_id = get_path_mount_id(path),
+                .path_id = syscall->open.file.path_key.path_id,
+            },
+            .flags = syscall->open.file.flags,
         },
         .container = {},
         .exec_timestamp = bpf_ktime_get_ns(),
@@ -94,7 +96,7 @@ int __attribute__((always_inline)) handle_exec_event(struct pt_regs *ctx, struct
     bpf_get_current_comm(&entry.comm, sizeof(entry.comm));
 
     // cache dentry
-    resolve_dentry(syscall->open.dentry, syscall->open.path_key, 0);
+    resolve_dentry(syscall->open.dentry, syscall->open.file.path_key, 0);
 
     u32 cookie = bpf_get_prandom_u32();
     // insert new proc cache entry
@@ -213,10 +215,7 @@ int sched_process_fork(struct _tracepoint_sched_process_fork *args) {
         if (parent_proc_entry) {
 
             // copy parent proc cache entry data
-            event.proc_entry.executable.inode = parent_proc_entry->executable.inode;
-            event.proc_entry.executable.overlay_numlower = parent_proc_entry->executable.overlay_numlower;
-            event.proc_entry.executable.mount_id = parent_proc_entry->executable.mount_id;
-            event.proc_entry.executable.path_id = parent_proc_entry->executable.path_id;
+            event.proc_entry.executable = parent_proc_entry->executable;
             event.proc_entry.exec_timestamp = parent_proc_entry->exec_timestamp;
             copy_tty_name(event.proc_entry.tty_name, parent_proc_entry->tty_name);
 
@@ -290,12 +289,7 @@ int kprobe_security_bprm_committed_creds(struct pt_regs *ctx) {
         struct proc_cache_t *proc_entry = bpf_map_lookup_elem(&proc_cache, &cookie);
         if (proc_entry) {
             struct exec_event_t event = {
-                .proc_entry.executable = {
-                    .inode = proc_entry->executable.inode,
-                    .overlay_numlower = proc_entry->executable.overlay_numlower,
-                    .mount_id = proc_entry->executable.mount_id,
-                    .path_id = proc_entry->executable.path_id,
-                },
+                .proc_entry.executable = proc_entry->executable,
                 .proc_entry.container = {},
                 .proc_entry.exec_timestamp = proc_entry->exec_timestamp,
                 .pid_entry.cookie = pid_entry->cookie,

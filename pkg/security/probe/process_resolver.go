@@ -45,8 +45,8 @@ func getDoForkInput(probe *Probe) uint64 {
 
 // InodeInfo holds information related to inode from kernel
 type InodeInfo struct {
-	MountID         uint32
-	OverlayNumLower int32
+	MountID uint32
+	Flags   int32
 }
 
 // UnmarshalBinary unmarshals a binary representation of itself
@@ -55,7 +55,7 @@ func (i *InodeInfo) UnmarshalBinary(data []byte) (int, error) {
 		return 0, model.ErrNotEnoughData
 	}
 	i.MountID = ebpf.ByteOrder.Uint32(data)
-	i.OverlayNumLower = int32(ebpf.ByteOrder.Uint32(data[4:]))
+	i.Flags = int32(ebpf.ByteOrder.Uint32(data[4:]))
 	return 8, nil
 }
 
@@ -151,9 +151,9 @@ func (p *ProcessResolver) enrichEventFromProc(entry *model.ProcessCacheEntry, pr
 		}
 
 		entry.FileFields = model.FileFields{
-			Inode:           inode,
-			OverlayNumLower: info.OverlayNumLower,
-			MountID:         info.MountID,
+			Inode:   inode,
+			Flags:   info.Flags,
+			MountID: info.MountID,
 		}
 		entry.ExecEvent.PathnameStr = pathnameStr
 		entry.ContainerContext.ID = string(containerID)

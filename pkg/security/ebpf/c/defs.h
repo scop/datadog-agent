@@ -227,14 +227,6 @@ struct kevent_t {
     u64 type;
 };
 
-struct file_t {
-    u64 inode;
-    u32 mount_id;
-    u32 overlay_numlower;
-    u32 path_id;
-    u32 padding;
-};
-
 struct syscall_t {
     s64 retval;
 };
@@ -250,10 +242,21 @@ struct container_context_t {
     char container_id[CONTAINER_ID_LEN];
 };
 
+enum file_flags {
+    LOWER_LAYER = 1 << 0,
+    UPPER_LAYER = 1 << 1,
+};
+
 struct path_key_t {
     u64 ino;
     u32 mount_id;
     u32 path_id;
+};
+
+struct file_t {
+    struct path_key_t path_key;
+    u32 flags;
+    u32 padding;
 };
 
 struct bpf_map_def SEC("maps/path_id") path_id = {

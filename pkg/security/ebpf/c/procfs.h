@@ -3,7 +3,7 @@
 
 struct inode_info_entry_t {
     u32 mount_id;
-    u32 overlay_numlower;
+    u32 flags;
 };
 
 struct bpf_map_def SEC("maps/inode_info_cache") inode_info_cache = {
@@ -21,13 +21,16 @@ int kretprobe__get_task_exe_file(struct pt_regs *ctx) {
 
     struct dentry *dentry = get_file_dentry(file);
 
-    u64 inode = get_dentry_ino(dentry);
-    u32 overlay_numlower = get_overlay_numlower(dentry);
+    u32 flags = 0;
     u32 mount_id = get_file_mount_id(file);
+    u64 inode = get_dentry_ino(dentry);
+    if (is_overlayfs(dentry)) {
+        set_overlayfs_ino(dentry, &inode, &flags);
+    }
 
     struct inode_info_entry_t entry = {
         .mount_id = mount_id,
-        .overlay_numlower = overlay_numlower,
+        .flags = flags,
     };
 
     bpf_map_update_elem(&inode_info_cache, &inode, &entry, BPF_ANY);

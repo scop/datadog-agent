@@ -232,6 +232,12 @@ var (
 	unlinkFlagsStrings = map[int]string{}
 )
 
+// File flags
+const (
+	LowerLayer = 1 << 0
+	UpperLayer = 1 << 1
+)
+
 func initOpenConstants() {
 	for k, v := range openFlagsConstants {
 		SECLConstants[k] = &eval.IntEvaluator{Value: v}

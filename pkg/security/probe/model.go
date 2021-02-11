@@ -83,6 +83,11 @@ func (ev *Event) ResolveFileContainerPath(f *model.FileEvent) string {
 	return f.ContainerPath
 }
 
+// ResolveFileInUpperLayer resolves whether the file is in an upper layer
+func (ev *Event) ResolveFileInUpperLayer(f *model.FileEvent) bool {
+	return f.Flags&model.UpperLayer != 0
+}
+
 // GetXAttrName returns the string representation of the extended attribute name
 func (ev *Event) GetXAttrName(e *model.SetXAttrEvent) string {
 	if len(e.Name) == 0 {
@@ -284,6 +289,16 @@ func (ev *Event) ResolveExecExitTimestamp(e *model.ExecEvent) time.Time {
 		}
 	}
 	return e.ExitTime
+}
+
+// ResolveExecInUpperLayer resolves whether the file is in an upper layer
+func (ev *Event) ResolveExecInUpperLayer(f *model.ExecEvent) bool {
+	if ev != nil {
+		if entry := ev.ResolveProcessCacheEntry(); entry != nil {
+			return entry.Flags&model.UpperLayer != 0
+		}
+	}
+	return false
 }
 
 // NewProcessCacheEntry returns an empty instance of ProcessCacheEntry

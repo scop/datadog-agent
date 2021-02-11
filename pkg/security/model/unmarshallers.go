@@ -144,8 +144,8 @@ func (e *FileFields) UnmarshalBinary(data []byte) (int, error) {
 	}
 	e.Inode = ebpf.ByteOrder.Uint64(data[0:8])
 	e.MountID = ebpf.ByteOrder.Uint32(data[8:12])
-	e.OverlayNumLower = int32(ebpf.ByteOrder.Uint32(data[12:16]))
-	e.PathID = ebpf.ByteOrder.Uint32(data[16:20])
+	e.PathID = ebpf.ByteOrder.Uint32(data[12:16])
+	e.Flags = int32(ebpf.ByteOrder.Uint32(data[16:20]))
 
 	return 24, nil
 }

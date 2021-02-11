@@ -5,7 +5,6 @@
 
 // +build linux
 
-//go:generate go run github.com/DataDog/datadog-agent/pkg/security/secl/generators/accessors -mock -tags linux -output accessors.go
 //go:generate go run github.com/DataDog/datadog-agent/pkg/security/secl/generators/accessors -tags linux -output ../probe/accessors.go
 
 package model
@@ -191,10 +190,10 @@ func (e *ExecEvent) GetPathResolutionError() string {
 
 // FileFields holds the information required to identify a file
 type FileFields struct {
-	MountID         uint32 `field:"-"`
-	Inode           uint64 `field:"inode"`
-	PathID          uint32 `field:"-"`
-	OverlayNumLower int32  `field:"overlay_numlower"`
+	MountID uint32 `field:"-"`
+	Inode   uint64 `field:"inode"`
+	PathID  uint32 `field:"-"`
+	Flags   int32  `field:"-"`
 }
 
 // FileEvent is the common file event type
@@ -203,6 +202,7 @@ type FileEvent struct {
 	PathnameStr   string `field:"filename" handler:"ResolveFileInode,string"`
 	ContainerPath string `field:"container_path" handler:"ResolveFileContainerPath,string"`
 	BasenameStr   string `field:"basename" handler:"ResolveFileBasename,string"`
+	InUpperLayer  bool   `field:"in_upper_layer" handler:"ResolveFileInUpperLayer,bool"`
 
 	PathResolutionError error `field:"-"`
 }

@@ -823,16 +823,8 @@ func easyjsonA970e379DecodeGithubComDataDogDatadogAgentPkgSecurityProbe3(in *jle
 				}
 				*out.Mode = uint32(in.Uint32())
 			}
-		case "overlay_numlower":
-			if in.IsNull() {
-				in.Skip()
-				out.OverlayNumLower = nil
-			} else {
-				if out.OverlayNumLower == nil {
-					out.OverlayNumLower = new(int32)
-				}
-				*out.OverlayNumLower = int32(in.Int32())
-			}
+		case "in_upper_layer":
+			out.InUpperLayer = bool(in.Bool())
 		case "mount_id":
 			if in.IsNull() {
 				in.Skip()
@@ -984,74 +976,44 @@ func easyjsonA970e379EncodeGithubComDataDogDatadogAgentPkgSecurityProbe3(out *jw
 		}
 		out.Uint32(uint32(*in.Mode))
 	}
-	if in.OverlayNumLower != nil {
-		const prefix string = ",\"overlay_numlower\":"
+	{
+		const prefix string = ",\"in_upper_layer\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
 		} else {
 			out.RawString(prefix)
 		}
-		out.Int32(int32(*in.OverlayNumLower))
+		out.Bool(bool(in.InUpperLayer))
 	}
 	if in.MountID != nil {
 		const prefix string = ",\"mount_id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Uint32(uint32(*in.MountID))
 	}
 	if in.UID != nil {
 		const prefix string = ",\"uid\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Int32(int32(*in.UID))
 	}
 	if in.GID != nil {
 		const prefix string = ",\"gid\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Int32(int32(*in.GID))
 	}
 	if in.XAttrName != "" {
 		const prefix string = ",\"attribute_name\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.XAttrName))
 	}
 	if in.XAttrNamespace != "" {
 		const prefix string = ",\"attribute_namespace\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.XAttrNamespace))
 	}
 	if len(in.Flags) != 0 {
 		const prefix string = ",\"flags\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		{
 			out.RawByte('[')
 			for v5, v6 := range in.Flags {
@@ -1065,22 +1027,12 @@ func easyjsonA970e379EncodeGithubComDataDogDatadogAgentPkgSecurityProbe3(out *jw
 	}
 	if in.Atime != nil {
 		const prefix string = ",\"access_time\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((*in.Atime).MarshalJSON())
 	}
 	if in.Mtime != nil {
 		const prefix string = ",\"modification_time\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((*in.Mtime).MarshalJSON())
 	}
 	out.RawByte('}')
@@ -1174,16 +1126,8 @@ func easyjsonA970e379DecodeGithubComDataDogDatadogAgentPkgSecurityProbe4(in *jle
 				}
 				*out.Mode = uint32(in.Uint32())
 			}
-		case "overlay_numlower":
-			if in.IsNull() {
-				in.Skip()
-				out.OverlayNumLower = nil
-			} else {
-				if out.OverlayNumLower == nil {
-					out.OverlayNumLower = new(int32)
-				}
-				*out.OverlayNumLower = int32(in.Int32())
-			}
+		case "in_upper_layer":
+			out.InUpperLayer = bool(in.Bool())
 		case "mount_id":
 			if in.IsNull() {
 				in.Skip()
@@ -1385,74 +1329,44 @@ func easyjsonA970e379EncodeGithubComDataDogDatadogAgentPkgSecurityProbe4(out *jw
 		}
 		out.Uint32(uint32(*in.Mode))
 	}
-	if in.OverlayNumLower != nil {
-		const prefix string = ",\"overlay_numlower\":"
+	{
+		const prefix string = ",\"in_upper_layer\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
 		} else {
 			out.RawString(prefix)
 		}
-		out.Int32(int32(*in.OverlayNumLower))
+		out.Bool(bool(in.InUpperLayer))
 	}
 	if in.MountID != nil {
 		const prefix string = ",\"mount_id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Uint32(uint32(*in.MountID))
 	}
 	if in.UID != nil {
 		const prefix string = ",\"uid\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Int32(int32(*in.UID))
 	}
 	if in.GID != nil {
 		const prefix string = ",\"gid\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Int32(int32(*in.GID))
 	}
 	if in.XAttrName != "" {
 		const prefix string = ",\"attribute_name\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.XAttrName))
 	}
 	if in.XAttrNamespace != "" {
 		const prefix string = ",\"attribute_namespace\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.XAttrNamespace))
 	}
 	if len(in.Flags) != 0 {
 		const prefix string = ",\"flags\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		{
 			out.RawByte('[')
 			for v8, v9 := range in.Flags {
@@ -1466,22 +1380,12 @@ func easyjsonA970e379EncodeGithubComDataDogDatadogAgentPkgSecurityProbe4(out *jw
 	}
 	if in.Atime != nil {
 		const prefix string = ",\"access_time\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((*in.Atime).MarshalJSON())
 	}
 	if in.Mtime != nil {
 		const prefix string = ",\"modification_time\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((*in.Mtime).MarshalJSON())
 	}
 	out.RawByte('}')

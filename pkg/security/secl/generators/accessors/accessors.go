@@ -593,7 +593,7 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 			{{$FieldName}} = {{$Field.OrigType}}(v)
 			return nil
 		{{else if eq $Field.BasicType "bool"}}
-			if {{$FieldName}}, ok = value.(string); !ok {
+			if {{$FieldName}}, ok = value.(bool); !ok {
 				return &eval.ErrValueTypeMismatch{Field: "{{$Field.Name}}"}
 			}
 			return nil

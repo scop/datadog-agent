@@ -32,7 +32,7 @@ type FileSerializer struct {
 	PathResolutionError string     `json:"path_resolution_error,omitempty"`
 	Inode               *uint64    `json:"inode,omitempty"`
 	Mode                *uint32    `json:"mode,omitempty"`
-	OverlayNumLower     *int32     `json:"overlay_numlower,omitempty"`
+	InUpperLayer        bool       `json:"in_upper_layer"`
 	MountID             *uint32    `json:"mount_id,omitempty"`
 	UID                 *int32     `json:"uid,omitempty"`
 	GID                 *int32     `json:"gid,omitempty"`
@@ -126,7 +126,7 @@ func newFileSerializer(fe *model.FileEvent, e *Event) *FileSerializer {
 		ContainerPath:       e.ResolveFileContainerPath(fe),
 		Inode:               getUint64Pointer(&fe.Inode),
 		MountID:             getUint32Pointer(&fe.MountID),
-		OverlayNumLower:     getInt32Pointer(&fe.OverlayNumLower),
+		InUpperLayer:        e.ResolveFileInUpperLayer(fe),
 	}
 }
 
@@ -137,7 +137,7 @@ func newExecSerializer(exec *model.ExecEvent, e *Event) *FileSerializer {
 		ContainerPath:       e.ResolveExecContainerPath(exec),
 		Inode:               getUint64Pointer(&exec.Inode),
 		MountID:             getUint32Pointer(&exec.MountID),
-		OverlayNumLower:     getInt32Pointer(&exec.OverlayNumLower),
+		InUpperLayer:        e.ResolveExecInUpperLayer(exec),
 	}
 }
 

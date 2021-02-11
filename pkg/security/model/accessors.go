@@ -66,6 +66,18 @@ func (m *Model) GetEvaluator(field eval.Field, regID eval.RegisterID) (eval.Eval
 			Weight: eval.HandlerWeight,
 		}, nil
 
+	case "chmod.in_upper_layer":
+		return &eval.BoolEvaluator{
+			EvalFnc: func(ctx *eval.Context) bool {
+
+				return (*Event)(ctx.Object).Chmod.FileEvent.InUpperLayer
+
+			},
+			Field: field,
+
+			Weight: eval.HandlerWeight,
+		}, nil
+
 	case "chmod.inode":
 		return &eval.IntEvaluator{
 			EvalFnc: func(ctx *eval.Context) int {
@@ -83,18 +95,6 @@ func (m *Model) GetEvaluator(field eval.Field, regID eval.RegisterID) (eval.Eval
 			EvalFnc: func(ctx *eval.Context) int {
 
 				return int((*Event)(ctx.Object).Chmod.Mode)
-
-			},
-			Field: field,
-
-			Weight: eval.FunctionWeight,
-		}, nil
-
-	case "chmod.overlay_numlower":
-		return &eval.IntEvaluator{
-			EvalFnc: func(ctx *eval.Context) int {
-
-				return int((*Event)(ctx.Object).Chmod.FileEvent.FileFields.OverlayNumLower)
 
 			},
 			Field: field,
@@ -162,23 +162,23 @@ func (m *Model) GetEvaluator(field eval.Field, regID eval.RegisterID) (eval.Eval
 			Weight: eval.FunctionWeight,
 		}, nil
 
+	case "chown.in_upper_layer":
+		return &eval.BoolEvaluator{
+			EvalFnc: func(ctx *eval.Context) bool {
+
+				return (*Event)(ctx.Object).Chown.FileEvent.InUpperLayer
+
+			},
+			Field: field,
+
+			Weight: eval.HandlerWeight,
+		}, nil
+
 	case "chown.inode":
 		return &eval.IntEvaluator{
 			EvalFnc: func(ctx *eval.Context) int {
 
 				return int((*Event)(ctx.Object).Chown.FileEvent.FileFields.Inode)
-
-			},
-			Field: field,
-
-			Weight: eval.FunctionWeight,
-		}, nil
-
-	case "chown.overlay_numlower":
-		return &eval.IntEvaluator{
-			EvalFnc: func(ctx *eval.Context) int {
-
-				return int((*Event)(ctx.Object).Chown.FileEvent.FileFields.OverlayNumLower)
 
 			},
 			Field: field,
@@ -306,18 +306,6 @@ func (m *Model) GetEvaluator(field eval.Field, regID eval.RegisterID) (eval.Eval
 			Weight: eval.HandlerWeight,
 		}, nil
 
-	case "exec.overlay_numlower":
-		return &eval.IntEvaluator{
-			EvalFnc: func(ctx *eval.Context) int {
-
-				return int((*Event)(ctx.Object).Exec.FileFields.OverlayNumLower)
-
-			},
-			Field: field,
-
-			Weight: eval.FunctionWeight,
-		}, nil
-
 	case "exec.ppid":
 		return &eval.IntEvaluator{
 			EvalFnc: func(ctx *eval.Context) int {
@@ -414,23 +402,23 @@ func (m *Model) GetEvaluator(field eval.Field, regID eval.RegisterID) (eval.Eval
 			Weight: eval.HandlerWeight,
 		}, nil
 
+	case "link.source.in_upper_layer":
+		return &eval.BoolEvaluator{
+			EvalFnc: func(ctx *eval.Context) bool {
+
+				return (*Event)(ctx.Object).Link.Source.InUpperLayer
+
+			},
+			Field: field,
+
+			Weight: eval.HandlerWeight,
+		}, nil
+
 	case "link.source.inode":
 		return &eval.IntEvaluator{
 			EvalFnc: func(ctx *eval.Context) int {
 
 				return int((*Event)(ctx.Object).Link.Source.FileFields.Inode)
-
-			},
-			Field: field,
-
-			Weight: eval.FunctionWeight,
-		}, nil
-
-	case "link.source.overlay_numlower":
-		return &eval.IntEvaluator{
-			EvalFnc: func(ctx *eval.Context) int {
-
-				return int((*Event)(ctx.Object).Link.Source.FileFields.OverlayNumLower)
 
 			},
 			Field: field,
@@ -474,23 +462,23 @@ func (m *Model) GetEvaluator(field eval.Field, regID eval.RegisterID) (eval.Eval
 			Weight: eval.HandlerWeight,
 		}, nil
 
+	case "link.target.in_upper_layer":
+		return &eval.BoolEvaluator{
+			EvalFnc: func(ctx *eval.Context) bool {
+
+				return (*Event)(ctx.Object).Link.Target.InUpperLayer
+
+			},
+			Field: field,
+
+			Weight: eval.HandlerWeight,
+		}, nil
+
 	case "link.target.inode":
 		return &eval.IntEvaluator{
 			EvalFnc: func(ctx *eval.Context) int {
 
 				return int((*Event)(ctx.Object).Link.Target.FileFields.Inode)
-
-			},
-			Field: field,
-
-			Weight: eval.FunctionWeight,
-		}, nil
-
-	case "link.target.overlay_numlower":
-		return &eval.IntEvaluator{
-			EvalFnc: func(ctx *eval.Context) int {
-
-				return int((*Event)(ctx.Object).Link.Target.FileFields.OverlayNumLower)
 
 			},
 			Field: field,
@@ -534,6 +522,18 @@ func (m *Model) GetEvaluator(field eval.Field, regID eval.RegisterID) (eval.Eval
 			Weight: eval.HandlerWeight,
 		}, nil
 
+	case "mkdir.in_upper_layer":
+		return &eval.BoolEvaluator{
+			EvalFnc: func(ctx *eval.Context) bool {
+
+				return (*Event)(ctx.Object).Mkdir.FileEvent.InUpperLayer
+
+			},
+			Field: field,
+
+			Weight: eval.HandlerWeight,
+		}, nil
+
 	case "mkdir.inode":
 		return &eval.IntEvaluator{
 			EvalFnc: func(ctx *eval.Context) int {
@@ -551,18 +551,6 @@ func (m *Model) GetEvaluator(field eval.Field, regID eval.RegisterID) (eval.Eval
 			EvalFnc: func(ctx *eval.Context) int {
 
 				return int((*Event)(ctx.Object).Mkdir.Mode)
-
-			},
-			Field: field,
-
-			Weight: eval.FunctionWeight,
-		}, nil
-
-	case "mkdir.overlay_numlower":
-		return &eval.IntEvaluator{
-			EvalFnc: func(ctx *eval.Context) int {
-
-				return int((*Event)(ctx.Object).Mkdir.FileEvent.FileFields.OverlayNumLower)
 
 			},
 			Field: field,
@@ -630,6 +618,18 @@ func (m *Model) GetEvaluator(field eval.Field, regID eval.RegisterID) (eval.Eval
 			Weight: eval.FunctionWeight,
 		}, nil
 
+	case "open.in_upper_layer":
+		return &eval.BoolEvaluator{
+			EvalFnc: func(ctx *eval.Context) bool {
+
+				return (*Event)(ctx.Object).Open.FileEvent.InUpperLayer
+
+			},
+			Field: field,
+
+			Weight: eval.HandlerWeight,
+		}, nil
+
 	case "open.inode":
 		return &eval.IntEvaluator{
 			EvalFnc: func(ctx *eval.Context) int {
@@ -647,18 +647,6 @@ func (m *Model) GetEvaluator(field eval.Field, regID eval.RegisterID) (eval.Eval
 			EvalFnc: func(ctx *eval.Context) int {
 
 				return int((*Event)(ctx.Object).Open.Mode)
-
-			},
-			Field: field,
-
-			Weight: eval.FunctionWeight,
-		}, nil
-
-	case "open.overlay_numlower":
-		return &eval.IntEvaluator{
-			EvalFnc: func(ctx *eval.Context) int {
-
-				return int((*Event)(ctx.Object).Open.FileEvent.FileFields.OverlayNumLower)
 
 			},
 			Field: field,
@@ -843,28 +831,6 @@ func (m *Model) GetEvaluator(field eval.Field, regID eval.RegisterID) (eval.Eval
 					element := (*ProcessCacheEntry)(reg.Value)
 
 					result = element.ProcessContext.ExecEvent.BasenameStr
-
-				}
-
-				return result
-
-			},
-			Field: field,
-
-			Weight: eval.IteratorWeight,
-		}, nil
-
-	case "process.ancestors.overlay_numlower":
-		return &eval.IntEvaluator{
-			EvalFnc: func(ctx *eval.Context) int {
-
-				var result int
-
-				reg := ctx.Registers[regID]
-				if reg.Value != nil {
-					element := (*ProcessCacheEntry)(reg.Value)
-
-					result = int(element.ProcessContext.ExecEvent.FileFields.OverlayNumLower)
 
 				}
 
@@ -1092,18 +1058,6 @@ func (m *Model) GetEvaluator(field eval.Field, regID eval.RegisterID) (eval.Eval
 			Weight: eval.HandlerWeight,
 		}, nil
 
-	case "process.overlay_numlower":
-		return &eval.IntEvaluator{
-			EvalFnc: func(ctx *eval.Context) int {
-
-				return int((*Event)(ctx.Object).Process.ExecEvent.FileFields.OverlayNumLower)
-
-			},
-			Field: field,
-
-			Weight: eval.FunctionWeight,
-		}, nil
-
 	case "process.pid":
 		return &eval.IntEvaluator{
 			EvalFnc: func(ctx *eval.Context) int {
@@ -1212,6 +1166,18 @@ func (m *Model) GetEvaluator(field eval.Field, regID eval.RegisterID) (eval.Eval
 			Weight: eval.HandlerWeight,
 		}, nil
 
+	case "removexattr.in_upper_layer":
+		return &eval.BoolEvaluator{
+			EvalFnc: func(ctx *eval.Context) bool {
+
+				return (*Event)(ctx.Object).RemoveXAttr.FileEvent.InUpperLayer
+
+			},
+			Field: field,
+
+			Weight: eval.HandlerWeight,
+		}, nil
+
 	case "removexattr.inode":
 		return &eval.IntEvaluator{
 			EvalFnc: func(ctx *eval.Context) int {
@@ -1246,18 +1212,6 @@ func (m *Model) GetEvaluator(field eval.Field, regID eval.RegisterID) (eval.Eval
 			Field: field,
 
 			Weight: eval.HandlerWeight,
-		}, nil
-
-	case "removexattr.overlay_numlower":
-		return &eval.IntEvaluator{
-			EvalFnc: func(ctx *eval.Context) int {
-
-				return int((*Event)(ctx.Object).RemoveXAttr.FileEvent.FileFields.OverlayNumLower)
-
-			},
-			Field: field,
-
-			Weight: eval.FunctionWeight,
 		}, nil
 
 	case "removexattr.retval":
@@ -1308,23 +1262,23 @@ func (m *Model) GetEvaluator(field eval.Field, regID eval.RegisterID) (eval.Eval
 			Weight: eval.HandlerWeight,
 		}, nil
 
+	case "rename.new.in_upper_layer":
+		return &eval.BoolEvaluator{
+			EvalFnc: func(ctx *eval.Context) bool {
+
+				return (*Event)(ctx.Object).Rename.New.InUpperLayer
+
+			},
+			Field: field,
+
+			Weight: eval.HandlerWeight,
+		}, nil
+
 	case "rename.new.inode":
 		return &eval.IntEvaluator{
 			EvalFnc: func(ctx *eval.Context) int {
 
 				return int((*Event)(ctx.Object).Rename.New.FileFields.Inode)
-
-			},
-			Field: field,
-
-			Weight: eval.FunctionWeight,
-		}, nil
-
-	case "rename.new.overlay_numlower":
-		return &eval.IntEvaluator{
-			EvalFnc: func(ctx *eval.Context) int {
-
-				return int((*Event)(ctx.Object).Rename.New.FileFields.OverlayNumLower)
 
 			},
 			Field: field,
@@ -1368,23 +1322,23 @@ func (m *Model) GetEvaluator(field eval.Field, regID eval.RegisterID) (eval.Eval
 			Weight: eval.HandlerWeight,
 		}, nil
 
+	case "rename.old.in_upper_layer":
+		return &eval.BoolEvaluator{
+			EvalFnc: func(ctx *eval.Context) bool {
+
+				return (*Event)(ctx.Object).Rename.Old.InUpperLayer
+
+			},
+			Field: field,
+
+			Weight: eval.HandlerWeight,
+		}, nil
+
 	case "rename.old.inode":
 		return &eval.IntEvaluator{
 			EvalFnc: func(ctx *eval.Context) int {
 
 				return int((*Event)(ctx.Object).Rename.Old.FileFields.Inode)
-
-			},
-			Field: field,
-
-			Weight: eval.FunctionWeight,
-		}, nil
-
-	case "rename.old.overlay_numlower":
-		return &eval.IntEvaluator{
-			EvalFnc: func(ctx *eval.Context) int {
-
-				return int((*Event)(ctx.Object).Rename.Old.FileFields.OverlayNumLower)
 
 			},
 			Field: field,
@@ -1440,23 +1394,23 @@ func (m *Model) GetEvaluator(field eval.Field, regID eval.RegisterID) (eval.Eval
 			Weight: eval.HandlerWeight,
 		}, nil
 
+	case "rmdir.in_upper_layer":
+		return &eval.BoolEvaluator{
+			EvalFnc: func(ctx *eval.Context) bool {
+
+				return (*Event)(ctx.Object).Rmdir.FileEvent.InUpperLayer
+
+			},
+			Field: field,
+
+			Weight: eval.HandlerWeight,
+		}, nil
+
 	case "rmdir.inode":
 		return &eval.IntEvaluator{
 			EvalFnc: func(ctx *eval.Context) int {
 
 				return int((*Event)(ctx.Object).Rmdir.FileEvent.FileFields.Inode)
-
-			},
-			Field: field,
-
-			Weight: eval.FunctionWeight,
-		}, nil
-
-	case "rmdir.overlay_numlower":
-		return &eval.IntEvaluator{
-			EvalFnc: func(ctx *eval.Context) int {
-
-				return int((*Event)(ctx.Object).Rmdir.FileEvent.FileFields.OverlayNumLower)
 
 			},
 			Field: field,
@@ -1512,6 +1466,18 @@ func (m *Model) GetEvaluator(field eval.Field, regID eval.RegisterID) (eval.Eval
 			Weight: eval.HandlerWeight,
 		}, nil
 
+	case "setxattr.in_upper_layer":
+		return &eval.BoolEvaluator{
+			EvalFnc: func(ctx *eval.Context) bool {
+
+				return (*Event)(ctx.Object).SetXAttr.FileEvent.InUpperLayer
+
+			},
+			Field: field,
+
+			Weight: eval.HandlerWeight,
+		}, nil
+
 	case "setxattr.inode":
 		return &eval.IntEvaluator{
 			EvalFnc: func(ctx *eval.Context) int {
@@ -1546,18 +1512,6 @@ func (m *Model) GetEvaluator(field eval.Field, regID eval.RegisterID) (eval.Eval
 			Field: field,
 
 			Weight: eval.HandlerWeight,
-		}, nil
-
-	case "setxattr.overlay_numlower":
-		return &eval.IntEvaluator{
-			EvalFnc: func(ctx *eval.Context) int {
-
-				return int((*Event)(ctx.Object).SetXAttr.FileEvent.FileFields.OverlayNumLower)
-
-			},
-			Field: field,
-
-			Weight: eval.FunctionWeight,
 		}, nil
 
 	case "setxattr.retval":
@@ -1620,23 +1574,23 @@ func (m *Model) GetEvaluator(field eval.Field, regID eval.RegisterID) (eval.Eval
 			Weight: eval.FunctionWeight,
 		}, nil
 
+	case "unlink.in_upper_layer":
+		return &eval.BoolEvaluator{
+			EvalFnc: func(ctx *eval.Context) bool {
+
+				return (*Event)(ctx.Object).Unlink.FileEvent.InUpperLayer
+
+			},
+			Field: field,
+
+			Weight: eval.HandlerWeight,
+		}, nil
+
 	case "unlink.inode":
 		return &eval.IntEvaluator{
 			EvalFnc: func(ctx *eval.Context) int {
 
 				return int((*Event)(ctx.Object).Unlink.FileEvent.FileFields.Inode)
-
-			},
-			Field: field,
-
-			Weight: eval.FunctionWeight,
-		}, nil
-
-	case "unlink.overlay_numlower":
-		return &eval.IntEvaluator{
-			EvalFnc: func(ctx *eval.Context) int {
-
-				return int((*Event)(ctx.Object).Unlink.FileEvent.FileFields.OverlayNumLower)
 
 			},
 			Field: field,
@@ -1692,23 +1646,23 @@ func (m *Model) GetEvaluator(field eval.Field, regID eval.RegisterID) (eval.Eval
 			Weight: eval.HandlerWeight,
 		}, nil
 
+	case "utimes.in_upper_layer":
+		return &eval.BoolEvaluator{
+			EvalFnc: func(ctx *eval.Context) bool {
+
+				return (*Event)(ctx.Object).Utimes.FileEvent.InUpperLayer
+
+			},
+			Field: field,
+
+			Weight: eval.HandlerWeight,
+		}, nil
+
 	case "utimes.inode":
 		return &eval.IntEvaluator{
 			EvalFnc: func(ctx *eval.Context) int {
 
 				return int((*Event)(ctx.Object).Utimes.FileEvent.FileFields.Inode)
-
-			},
-			Field: field,
-
-			Weight: eval.FunctionWeight,
-		}, nil
-
-	case "utimes.overlay_numlower":
-		return &eval.IntEvaluator{
-			EvalFnc: func(ctx *eval.Context) int {
-
-				return int((*Event)(ctx.Object).Utimes.FileEvent.FileFields.OverlayNumLower)
 
 			},
 			Field: field,
@@ -1739,16 +1693,16 @@ func (e *Event) GetFields() []eval.Field {
 		"chmod.basename",
 		"chmod.container_path",
 		"chmod.filename",
+		"chmod.in_upper_layer",
 		"chmod.inode",
 		"chmod.mode",
-		"chmod.overlay_numlower",
 		"chmod.retval",
 		"chown.basename",
 		"chown.container_path",
 		"chown.filename",
 		"chown.gid",
+		"chown.in_upper_layer",
 		"chown.inode",
-		"chown.overlay_numlower",
 		"chown.retval",
 		"chown.uid",
 		"container.id",
@@ -1759,7 +1713,6 @@ func (e *Event) GetFields() []eval.Field {
 		"exec.group",
 		"exec.inode",
 		"exec.name",
-		"exec.overlay_numlower",
 		"exec.ppid",
 		"exec.tty_name",
 		"exec.uid",
@@ -1768,27 +1721,27 @@ func (e *Event) GetFields() []eval.Field {
 		"link.source.basename",
 		"link.source.container_path",
 		"link.source.filename",
+		"link.source.in_upper_layer",
 		"link.source.inode",
-		"link.source.overlay_numlower",
 		"link.target.basename",
 		"link.target.container_path",
 		"link.target.filename",
+		"link.target.in_upper_layer",
 		"link.target.inode",
-		"link.target.overlay_numlower",
 		"mkdir.basename",
 		"mkdir.container_path",
 		"mkdir.filename",
+		"mkdir.in_upper_layer",
 		"mkdir.inode",
 		"mkdir.mode",
-		"mkdir.overlay_numlower",
 		"mkdir.retval",
 		"open.basename",
 		"open.container_path",
 		"open.filename",
 		"open.flags",
+		"open.in_upper_layer",
 		"open.inode",
 		"open.mode",
-		"open.overlay_numlower",
 		"open.retval",
 		"process.ancestors.container_path",
 		"process.ancestors.cookie",
@@ -1798,7 +1751,6 @@ func (e *Event) GetFields() []eval.Field {
 		"process.ancestors.id",
 		"process.ancestors.inode",
 		"process.ancestors.name",
-		"process.ancestors.overlay_numlower",
 		"process.ancestors.pid",
 		"process.ancestors.ppid",
 		"process.ancestors.tid",
@@ -1812,7 +1764,6 @@ func (e *Event) GetFields() []eval.Field {
 		"process.group",
 		"process.inode",
 		"process.name",
-		"process.overlay_numlower",
 		"process.pid",
 		"process.ppid",
 		"process.tid",
@@ -1822,48 +1773,48 @@ func (e *Event) GetFields() []eval.Field {
 		"removexattr.basename",
 		"removexattr.container_path",
 		"removexattr.filename",
+		"removexattr.in_upper_layer",
 		"removexattr.inode",
 		"removexattr.name",
 		"removexattr.namespace",
-		"removexattr.overlay_numlower",
 		"removexattr.retval",
 		"rename.new.basename",
 		"rename.new.container_path",
 		"rename.new.filename",
+		"rename.new.in_upper_layer",
 		"rename.new.inode",
-		"rename.new.overlay_numlower",
 		"rename.old.basename",
 		"rename.old.container_path",
 		"rename.old.filename",
+		"rename.old.in_upper_layer",
 		"rename.old.inode",
-		"rename.old.overlay_numlower",
 		"rename.retval",
 		"rmdir.basename",
 		"rmdir.container_path",
 		"rmdir.filename",
+		"rmdir.in_upper_layer",
 		"rmdir.inode",
-		"rmdir.overlay_numlower",
 		"rmdir.retval",
 		"setxattr.basename",
 		"setxattr.container_path",
 		"setxattr.filename",
+		"setxattr.in_upper_layer",
 		"setxattr.inode",
 		"setxattr.name",
 		"setxattr.namespace",
-		"setxattr.overlay_numlower",
 		"setxattr.retval",
 		"unlink.basename",
 		"unlink.container_path",
 		"unlink.filename",
 		"unlink.flags",
+		"unlink.in_upper_layer",
 		"unlink.inode",
-		"unlink.overlay_numlower",
 		"unlink.retval",
 		"utimes.basename",
 		"utimes.container_path",
 		"utimes.filename",
+		"utimes.in_upper_layer",
 		"utimes.inode",
-		"utimes.overlay_numlower",
 		"utimes.retval",
 	}
 }
@@ -1883,6 +1834,10 @@ func (e *Event) GetFieldValue(field eval.Field) (interface{}, error) {
 
 		return e.Chmod.FileEvent.PathnameStr, nil
 
+	case "chmod.in_upper_layer":
+
+		return e.Chmod.FileEvent.InUpperLayer, nil
+
 	case "chmod.inode":
 
 		return int(e.Chmod.FileEvent.FileFields.Inode), nil
@@ -1890,10 +1845,6 @@ func (e *Event) GetFieldValue(field eval.Field) (interface{}, error) {
 	case "chmod.mode":
 
 		return int(e.Chmod.Mode), nil
-
-	case "chmod.overlay_numlower":
-
-		return int(e.Chmod.FileEvent.FileFields.OverlayNumLower), nil
 
 	case "chmod.retval":
 
@@ -1915,13 +1866,13 @@ func (e *Event) GetFieldValue(field eval.Field) (interface{}, error) {
 
 		return int(e.Chown.GID), nil
 
+	case "chown.in_upper_layer":
+
+		return e.Chown.FileEvent.InUpperLayer, nil
+
 	case "chown.inode":
 
 		return int(e.Chown.FileEvent.FileFields.Inode), nil
-
-	case "chown.overlay_numlower":
-
-		return int(e.Chown.FileEvent.FileFields.OverlayNumLower), nil
 
 	case "chown.retval":
 
@@ -1963,10 +1914,6 @@ func (e *Event) GetFieldValue(field eval.Field) (interface{}, error) {
 
 		return e.Exec.BasenameStr, nil
 
-	case "exec.overlay_numlower":
-
-		return int(e.Exec.FileFields.OverlayNumLower), nil
-
 	case "exec.ppid":
 
 		return int(e.Exec.PPid), nil
@@ -1999,13 +1946,13 @@ func (e *Event) GetFieldValue(field eval.Field) (interface{}, error) {
 
 		return e.Link.Source.PathnameStr, nil
 
+	case "link.source.in_upper_layer":
+
+		return e.Link.Source.InUpperLayer, nil
+
 	case "link.source.inode":
 
 		return int(e.Link.Source.FileFields.Inode), nil
-
-	case "link.source.overlay_numlower":
-
-		return int(e.Link.Source.FileFields.OverlayNumLower), nil
 
 	case "link.target.basename":
 
@@ -2019,13 +1966,13 @@ func (e *Event) GetFieldValue(field eval.Field) (interface{}, error) {
 
 		return e.Link.Target.PathnameStr, nil
 
+	case "link.target.in_upper_layer":
+
+		return e.Link.Target.InUpperLayer, nil
+
 	case "link.target.inode":
 
 		return int(e.Link.Target.FileFields.Inode), nil
-
-	case "link.target.overlay_numlower":
-
-		return int(e.Link.Target.FileFields.OverlayNumLower), nil
 
 	case "mkdir.basename":
 
@@ -2039,6 +1986,10 @@ func (e *Event) GetFieldValue(field eval.Field) (interface{}, error) {
 
 		return e.Mkdir.FileEvent.PathnameStr, nil
 
+	case "mkdir.in_upper_layer":
+
+		return e.Mkdir.FileEvent.InUpperLayer, nil
+
 	case "mkdir.inode":
 
 		return int(e.Mkdir.FileEvent.FileFields.Inode), nil
@@ -2046,10 +1997,6 @@ func (e *Event) GetFieldValue(field eval.Field) (interface{}, error) {
 	case "mkdir.mode":
 
 		return int(e.Mkdir.Mode), nil
-
-	case "mkdir.overlay_numlower":
-
-		return int(e.Mkdir.FileEvent.FileFields.OverlayNumLower), nil
 
 	case "mkdir.retval":
 
@@ -2071,6 +2018,10 @@ func (e *Event) GetFieldValue(field eval.Field) (interface{}, error) {
 
 		return int(e.Open.Flags), nil
 
+	case "open.in_upper_layer":
+
+		return e.Open.FileEvent.InUpperLayer, nil
+
 	case "open.inode":
 
 		return int(e.Open.FileEvent.FileFields.Inode), nil
@@ -2078,10 +2029,6 @@ func (e *Event) GetFieldValue(field eval.Field) (interface{}, error) {
 	case "open.mode":
 
 		return int(e.Open.Mode), nil
-
-	case "open.overlay_numlower":
-
-		return int(e.Open.FileEvent.FileFields.OverlayNumLower), nil
 
 	case "open.retval":
 
@@ -2263,28 +2210,6 @@ func (e *Event) GetFieldValue(field eval.Field) (interface{}, error) {
 
 		return values, nil
 
-	case "process.ancestors.overlay_numlower":
-
-		var values []int
-
-		ctx := &eval.Context{}
-		ctx.SetObject(unsafe.Pointer(e))
-
-		iterator := &ProcessAncestorsIterator{}
-		ptr := iterator.Front(ctx)
-
-		for ptr != nil {
-			element := (*ProcessCacheEntry)(ptr)
-
-			result := int(element.ProcessContext.ExecEvent.FileFields.OverlayNumLower)
-
-			values = append(values, result)
-
-			ptr = iterator.Next()
-		}
-
-		return values, nil
-
 	case "process.ancestors.pid":
 
 		var values []int
@@ -2445,10 +2370,6 @@ func (e *Event) GetFieldValue(field eval.Field) (interface{}, error) {
 
 		return e.Process.ExecEvent.BasenameStr, nil
 
-	case "process.overlay_numlower":
-
-		return int(e.Process.ExecEvent.FileFields.OverlayNumLower), nil
-
 	case "process.pid":
 
 		return int(e.Process.Pid), nil
@@ -2485,6 +2406,10 @@ func (e *Event) GetFieldValue(field eval.Field) (interface{}, error) {
 
 		return e.RemoveXAttr.FileEvent.PathnameStr, nil
 
+	case "removexattr.in_upper_layer":
+
+		return e.RemoveXAttr.FileEvent.InUpperLayer, nil
+
 	case "removexattr.inode":
 
 		return int(e.RemoveXAttr.FileEvent.FileFields.Inode), nil
@@ -2496,10 +2421,6 @@ func (e *Event) GetFieldValue(field eval.Field) (interface{}, error) {
 	case "removexattr.namespace":
 
 		return e.RemoveXAttr.Namespace, nil
-
-	case "removexattr.overlay_numlower":
-
-		return int(e.RemoveXAttr.FileEvent.FileFields.OverlayNumLower), nil
 
 	case "removexattr.retval":
 
@@ -2517,13 +2438,13 @@ func (e *Event) GetFieldValue(field eval.Field) (interface{}, error) {
 
 		return e.Rename.New.PathnameStr, nil
 
+	case "rename.new.in_upper_layer":
+
+		return e.Rename.New.InUpperLayer, nil
+
 	case "rename.new.inode":
 
 		return int(e.Rename.New.FileFields.Inode), nil
-
-	case "rename.new.overlay_numlower":
-
-		return int(e.Rename.New.FileFields.OverlayNumLower), nil
 
 	case "rename.old.basename":
 
@@ -2537,13 +2458,13 @@ func (e *Event) GetFieldValue(field eval.Field) (interface{}, error) {
 
 		return e.Rename.Old.PathnameStr, nil
 
+	case "rename.old.in_upper_layer":
+
+		return e.Rename.Old.InUpperLayer, nil
+
 	case "rename.old.inode":
 
 		return int(e.Rename.Old.FileFields.Inode), nil
-
-	case "rename.old.overlay_numlower":
-
-		return int(e.Rename.Old.FileFields.OverlayNumLower), nil
 
 	case "rename.retval":
 
@@ -2561,13 +2482,13 @@ func (e *Event) GetFieldValue(field eval.Field) (interface{}, error) {
 
 		return e.Rmdir.FileEvent.PathnameStr, nil
 
+	case "rmdir.in_upper_layer":
+
+		return e.Rmdir.FileEvent.InUpperLayer, nil
+
 	case "rmdir.inode":
 
 		return int(e.Rmdir.FileEvent.FileFields.Inode), nil
-
-	case "rmdir.overlay_numlower":
-
-		return int(e.Rmdir.FileEvent.FileFields.OverlayNumLower), nil
 
 	case "rmdir.retval":
 
@@ -2585,6 +2506,10 @@ func (e *Event) GetFieldValue(field eval.Field) (interface{}, error) {
 
 		return e.SetXAttr.FileEvent.PathnameStr, nil
 
+	case "setxattr.in_upper_layer":
+
+		return e.SetXAttr.FileEvent.InUpperLayer, nil
+
 	case "setxattr.inode":
 
 		return int(e.SetXAttr.FileEvent.FileFields.Inode), nil
@@ -2596,10 +2521,6 @@ func (e *Event) GetFieldValue(field eval.Field) (interface{}, error) {
 	case "setxattr.namespace":
 
 		return e.SetXAttr.Namespace, nil
-
-	case "setxattr.overlay_numlower":
-
-		return int(e.SetXAttr.FileEvent.FileFields.OverlayNumLower), nil
 
 	case "setxattr.retval":
 
@@ -2621,13 +2542,13 @@ func (e *Event) GetFieldValue(field eval.Field) (interface{}, error) {
 
 		return int(e.Unlink.Flags), nil
 
+	case "unlink.in_upper_layer":
+
+		return e.Unlink.FileEvent.InUpperLayer, nil
+
 	case "unlink.inode":
 
 		return int(e.Unlink.FileEvent.FileFields.Inode), nil
-
-	case "unlink.overlay_numlower":
-
-		return int(e.Unlink.FileEvent.FileFields.OverlayNumLower), nil
 
 	case "unlink.retval":
 
@@ -2645,13 +2566,13 @@ func (e *Event) GetFieldValue(field eval.Field) (interface{}, error) {
 
 		return e.Utimes.FileEvent.PathnameStr, nil
 
+	case "utimes.in_upper_layer":
+
+		return e.Utimes.FileEvent.InUpperLayer, nil
+
 	case "utimes.inode":
 
 		return int(e.Utimes.FileEvent.FileFields.Inode), nil
-
-	case "utimes.overlay_numlower":
-
-		return int(e.Utimes.FileEvent.FileFields.OverlayNumLower), nil
 
 	case "utimes.retval":
 
@@ -2674,13 +2595,13 @@ func (e *Event) GetFieldEventType(field eval.Field) (eval.EventType, error) {
 	case "chmod.filename":
 		return "chmod", nil
 
+	case "chmod.in_upper_layer":
+		return "chmod", nil
+
 	case "chmod.inode":
 		return "chmod", nil
 
 	case "chmod.mode":
-		return "chmod", nil
-
-	case "chmod.overlay_numlower":
 		return "chmod", nil
 
 	case "chmod.retval":
@@ -2698,10 +2619,10 @@ func (e *Event) GetFieldEventType(field eval.Field) (eval.EventType, error) {
 	case "chown.gid":
 		return "chown", nil
 
-	case "chown.inode":
+	case "chown.in_upper_layer":
 		return "chown", nil
 
-	case "chown.overlay_numlower":
+	case "chown.inode":
 		return "chown", nil
 
 	case "chown.retval":
@@ -2734,9 +2655,6 @@ func (e *Event) GetFieldEventType(field eval.Field) (eval.EventType, error) {
 	case "exec.name":
 		return "exec", nil
 
-	case "exec.overlay_numlower":
-		return "exec", nil
-
 	case "exec.ppid":
 		return "exec", nil
 
@@ -2761,10 +2679,10 @@ func (e *Event) GetFieldEventType(field eval.Field) (eval.EventType, error) {
 	case "link.source.filename":
 		return "link", nil
 
-	case "link.source.inode":
+	case "link.source.in_upper_layer":
 		return "link", nil
 
-	case "link.source.overlay_numlower":
+	case "link.source.inode":
 		return "link", nil
 
 	case "link.target.basename":
@@ -2776,10 +2694,10 @@ func (e *Event) GetFieldEventType(field eval.Field) (eval.EventType, error) {
 	case "link.target.filename":
 		return "link", nil
 
-	case "link.target.inode":
+	case "link.target.in_upper_layer":
 		return "link", nil
 
-	case "link.target.overlay_numlower":
+	case "link.target.inode":
 		return "link", nil
 
 	case "mkdir.basename":
@@ -2791,13 +2709,13 @@ func (e *Event) GetFieldEventType(field eval.Field) (eval.EventType, error) {
 	case "mkdir.filename":
 		return "mkdir", nil
 
+	case "mkdir.in_upper_layer":
+		return "mkdir", nil
+
 	case "mkdir.inode":
 		return "mkdir", nil
 
 	case "mkdir.mode":
-		return "mkdir", nil
-
-	case "mkdir.overlay_numlower":
 		return "mkdir", nil
 
 	case "mkdir.retval":
@@ -2815,13 +2733,13 @@ func (e *Event) GetFieldEventType(field eval.Field) (eval.EventType, error) {
 	case "open.flags":
 		return "open", nil
 
+	case "open.in_upper_layer":
+		return "open", nil
+
 	case "open.inode":
 		return "open", nil
 
 	case "open.mode":
-		return "open", nil
-
-	case "open.overlay_numlower":
 		return "open", nil
 
 	case "open.retval":
@@ -2849,9 +2767,6 @@ func (e *Event) GetFieldEventType(field eval.Field) (eval.EventType, error) {
 		return "*", nil
 
 	case "process.ancestors.name":
-		return "*", nil
-
-	case "process.ancestors.overlay_numlower":
 		return "*", nil
 
 	case "process.ancestors.pid":
@@ -2893,9 +2808,6 @@ func (e *Event) GetFieldEventType(field eval.Field) (eval.EventType, error) {
 	case "process.name":
 		return "*", nil
 
-	case "process.overlay_numlower":
-		return "*", nil
-
 	case "process.pid":
 		return "*", nil
 
@@ -2923,6 +2835,9 @@ func (e *Event) GetFieldEventType(field eval.Field) (eval.EventType, error) {
 	case "removexattr.filename":
 		return "removexattr", nil
 
+	case "removexattr.in_upper_layer":
+		return "removexattr", nil
+
 	case "removexattr.inode":
 		return "removexattr", nil
 
@@ -2930,9 +2845,6 @@ func (e *Event) GetFieldEventType(field eval.Field) (eval.EventType, error) {
 		return "removexattr", nil
 
 	case "removexattr.namespace":
-		return "removexattr", nil
-
-	case "removexattr.overlay_numlower":
 		return "removexattr", nil
 
 	case "removexattr.retval":
@@ -2947,10 +2859,10 @@ func (e *Event) GetFieldEventType(field eval.Field) (eval.EventType, error) {
 	case "rename.new.filename":
 		return "rename", nil
 
-	case "rename.new.inode":
+	case "rename.new.in_upper_layer":
 		return "rename", nil
 
-	case "rename.new.overlay_numlower":
+	case "rename.new.inode":
 		return "rename", nil
 
 	case "rename.old.basename":
@@ -2962,10 +2874,10 @@ func (e *Event) GetFieldEventType(field eval.Field) (eval.EventType, error) {
 	case "rename.old.filename":
 		return "rename", nil
 
-	case "rename.old.inode":
+	case "rename.old.in_upper_layer":
 		return "rename", nil
 
-	case "rename.old.overlay_numlower":
+	case "rename.old.inode":
 		return "rename", nil
 
 	case "rename.retval":
@@ -2980,10 +2892,10 @@ func (e *Event) GetFieldEventType(field eval.Field) (eval.EventType, error) {
 	case "rmdir.filename":
 		return "rmdir", nil
 
-	case "rmdir.inode":
+	case "rmdir.in_upper_layer":
 		return "rmdir", nil
 
-	case "rmdir.overlay_numlower":
+	case "rmdir.inode":
 		return "rmdir", nil
 
 	case "rmdir.retval":
@@ -2998,6 +2910,9 @@ func (e *Event) GetFieldEventType(field eval.Field) (eval.EventType, error) {
 	case "setxattr.filename":
 		return "setxattr", nil
 
+	case "setxattr.in_upper_layer":
+		return "setxattr", nil
+
 	case "setxattr.inode":
 		return "setxattr", nil
 
@@ -3005,9 +2920,6 @@ func (e *Event) GetFieldEventType(field eval.Field) (eval.EventType, error) {
 		return "setxattr", nil
 
 	case "setxattr.namespace":
-		return "setxattr", nil
-
-	case "setxattr.overlay_numlower":
 		return "setxattr", nil
 
 	case "setxattr.retval":
@@ -3025,10 +2937,10 @@ func (e *Event) GetFieldEventType(field eval.Field) (eval.EventType, error) {
 	case "unlink.flags":
 		return "unlink", nil
 
-	case "unlink.inode":
+	case "unlink.in_upper_layer":
 		return "unlink", nil
 
-	case "unlink.overlay_numlower":
+	case "unlink.inode":
 		return "unlink", nil
 
 	case "unlink.retval":
@@ -3043,10 +2955,10 @@ func (e *Event) GetFieldEventType(field eval.Field) (eval.EventType, error) {
 	case "utimes.filename":
 		return "utimes", nil
 
-	case "utimes.inode":
+	case "utimes.in_upper_layer":
 		return "utimes", nil
 
-	case "utimes.overlay_numlower":
+	case "utimes.inode":
 		return "utimes", nil
 
 	case "utimes.retval":
@@ -3072,15 +2984,15 @@ func (e *Event) GetFieldType(field eval.Field) (reflect.Kind, error) {
 
 		return reflect.String, nil
 
+	case "chmod.in_upper_layer":
+
+		return reflect.Bool, nil
+
 	case "chmod.inode":
 
 		return reflect.Int, nil
 
 	case "chmod.mode":
-
-		return reflect.Int, nil
-
-	case "chmod.overlay_numlower":
 
 		return reflect.Int, nil
 
@@ -3104,11 +3016,11 @@ func (e *Event) GetFieldType(field eval.Field) (reflect.Kind, error) {
 
 		return reflect.Int, nil
 
+	case "chown.in_upper_layer":
+
+		return reflect.Bool, nil
+
 	case "chown.inode":
-
-		return reflect.Int, nil
-
-	case "chown.overlay_numlower":
 
 		return reflect.Int, nil
 
@@ -3152,10 +3064,6 @@ func (e *Event) GetFieldType(field eval.Field) (reflect.Kind, error) {
 
 		return reflect.String, nil
 
-	case "exec.overlay_numlower":
-
-		return reflect.Int, nil
-
 	case "exec.ppid":
 
 		return reflect.Int, nil
@@ -3188,11 +3096,11 @@ func (e *Event) GetFieldType(field eval.Field) (reflect.Kind, error) {
 
 		return reflect.String, nil
 
+	case "link.source.in_upper_layer":
+
+		return reflect.Bool, nil
+
 	case "link.source.inode":
-
-		return reflect.Int, nil
-
-	case "link.source.overlay_numlower":
 
 		return reflect.Int, nil
 
@@ -3208,11 +3116,11 @@ func (e *Event) GetFieldType(field eval.Field) (reflect.Kind, error) {
 
 		return reflect.String, nil
 
+	case "link.target.in_upper_layer":
+
+		return reflect.Bool, nil
+
 	case "link.target.inode":
-
-		return reflect.Int, nil
-
-	case "link.target.overlay_numlower":
 
 		return reflect.Int, nil
 
@@ -3228,15 +3136,15 @@ func (e *Event) GetFieldType(field eval.Field) (reflect.Kind, error) {
 
 		return reflect.String, nil
 
+	case "mkdir.in_upper_layer":
+
+		return reflect.Bool, nil
+
 	case "mkdir.inode":
 
 		return reflect.Int, nil
 
 	case "mkdir.mode":
-
-		return reflect.Int, nil
-
-	case "mkdir.overlay_numlower":
 
 		return reflect.Int, nil
 
@@ -3260,15 +3168,15 @@ func (e *Event) GetFieldType(field eval.Field) (reflect.Kind, error) {
 
 		return reflect.Int, nil
 
+	case "open.in_upper_layer":
+
+		return reflect.Bool, nil
+
 	case "open.inode":
 
 		return reflect.Int, nil
 
 	case "open.mode":
-
-		return reflect.Int, nil
-
-	case "open.overlay_numlower":
 
 		return reflect.Int, nil
 
@@ -3307,10 +3215,6 @@ func (e *Event) GetFieldType(field eval.Field) (reflect.Kind, error) {
 	case "process.ancestors.name":
 
 		return reflect.String, nil
-
-	case "process.ancestors.overlay_numlower":
-
-		return reflect.Int, nil
 
 	case "process.ancestors.pid":
 
@@ -3364,10 +3268,6 @@ func (e *Event) GetFieldType(field eval.Field) (reflect.Kind, error) {
 
 		return reflect.String, nil
 
-	case "process.overlay_numlower":
-
-		return reflect.Int, nil
-
 	case "process.pid":
 
 		return reflect.Int, nil
@@ -3404,6 +3304,10 @@ func (e *Event) GetFieldType(field eval.Field) (reflect.Kind, error) {
 
 		return reflect.String, nil
 
+	case "removexattr.in_upper_layer":
+
+		return reflect.Bool, nil
+
 	case "removexattr.inode":
 
 		return reflect.Int, nil
@@ -3415,10 +3319,6 @@ func (e *Event) GetFieldType(field eval.Field) (reflect.Kind, error) {
 	case "removexattr.namespace":
 
 		return reflect.String, nil
-
-	case "removexattr.overlay_numlower":
-
-		return reflect.Int, nil
 
 	case "removexattr.retval":
 
@@ -3436,11 +3336,11 @@ func (e *Event) GetFieldType(field eval.Field) (reflect.Kind, error) {
 
 		return reflect.String, nil
 
+	case "rename.new.in_upper_layer":
+
+		return reflect.Bool, nil
+
 	case "rename.new.inode":
-
-		return reflect.Int, nil
-
-	case "rename.new.overlay_numlower":
 
 		return reflect.Int, nil
 
@@ -3456,11 +3356,11 @@ func (e *Event) GetFieldType(field eval.Field) (reflect.Kind, error) {
 
 		return reflect.String, nil
 
+	case "rename.old.in_upper_layer":
+
+		return reflect.Bool, nil
+
 	case "rename.old.inode":
-
-		return reflect.Int, nil
-
-	case "rename.old.overlay_numlower":
 
 		return reflect.Int, nil
 
@@ -3480,11 +3380,11 @@ func (e *Event) GetFieldType(field eval.Field) (reflect.Kind, error) {
 
 		return reflect.String, nil
 
+	case "rmdir.in_upper_layer":
+
+		return reflect.Bool, nil
+
 	case "rmdir.inode":
-
-		return reflect.Int, nil
-
-	case "rmdir.overlay_numlower":
 
 		return reflect.Int, nil
 
@@ -3504,6 +3404,10 @@ func (e *Event) GetFieldType(field eval.Field) (reflect.Kind, error) {
 
 		return reflect.String, nil
 
+	case "setxattr.in_upper_layer":
+
+		return reflect.Bool, nil
+
 	case "setxattr.inode":
 
 		return reflect.Int, nil
@@ -3515,10 +3419,6 @@ func (e *Event) GetFieldType(field eval.Field) (reflect.Kind, error) {
 	case "setxattr.namespace":
 
 		return reflect.String, nil
-
-	case "setxattr.overlay_numlower":
-
-		return reflect.Int, nil
 
 	case "setxattr.retval":
 
@@ -3540,11 +3440,11 @@ func (e *Event) GetFieldType(field eval.Field) (reflect.Kind, error) {
 
 		return reflect.Int, nil
 
+	case "unlink.in_upper_layer":
+
+		return reflect.Bool, nil
+
 	case "unlink.inode":
-
-		return reflect.Int, nil
-
-	case "unlink.overlay_numlower":
 
 		return reflect.Int, nil
 
@@ -3564,11 +3464,11 @@ func (e *Event) GetFieldType(field eval.Field) (reflect.Kind, error) {
 
 		return reflect.String, nil
 
+	case "utimes.in_upper_layer":
+
+		return reflect.Bool, nil
+
 	case "utimes.inode":
-
-		return reflect.Int, nil
-
-	case "utimes.overlay_numlower":
 
 		return reflect.Int, nil
 
@@ -3608,6 +3508,14 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 		}
 		return nil
 
+	case "chmod.in_upper_layer":
+
+		var ok bool
+		if e.Chmod.FileEvent.InUpperLayer, ok = value.(bool); !ok {
+			return &eval.ErrValueTypeMismatch{Field: "Chmod.FileEvent.InUpperLayer"}
+		}
+		return nil
+
 	case "chmod.inode":
 
 		var ok bool
@@ -3626,16 +3534,6 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 			return &eval.ErrValueTypeMismatch{Field: "Chmod.Mode"}
 		}
 		e.Chmod.Mode = uint32(v)
-		return nil
-
-	case "chmod.overlay_numlower":
-
-		var ok bool
-		v, ok := value.(int)
-		if !ok {
-			return &eval.ErrValueTypeMismatch{Field: "Chmod.FileEvent.FileFields.OverlayNumLower"}
-		}
-		e.Chmod.FileEvent.FileFields.OverlayNumLower = int32(v)
 		return nil
 
 	case "chmod.retval":
@@ -3682,6 +3580,14 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 		e.Chown.GID = int32(v)
 		return nil
 
+	case "chown.in_upper_layer":
+
+		var ok bool
+		if e.Chown.FileEvent.InUpperLayer, ok = value.(bool); !ok {
+			return &eval.ErrValueTypeMismatch{Field: "Chown.FileEvent.InUpperLayer"}
+		}
+		return nil
+
 	case "chown.inode":
 
 		var ok bool
@@ -3690,16 +3596,6 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 			return &eval.ErrValueTypeMismatch{Field: "Chown.FileEvent.FileFields.Inode"}
 		}
 		e.Chown.FileEvent.FileFields.Inode = uint64(v)
-		return nil
-
-	case "chown.overlay_numlower":
-
-		var ok bool
-		v, ok := value.(int)
-		if !ok {
-			return &eval.ErrValueTypeMismatch{Field: "Chown.FileEvent.FileFields.OverlayNumLower"}
-		}
-		e.Chown.FileEvent.FileFields.OverlayNumLower = int32(v)
 		return nil
 
 	case "chown.retval":
@@ -3792,16 +3688,6 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 		}
 		return nil
 
-	case "exec.overlay_numlower":
-
-		var ok bool
-		v, ok := value.(int)
-		if !ok {
-			return &eval.ErrValueTypeMismatch{Field: "Exec.FileFields.OverlayNumLower"}
-		}
-		e.Exec.FileFields.OverlayNumLower = int32(v)
-		return nil
-
 	case "exec.ppid":
 
 		var ok bool
@@ -3872,6 +3758,14 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 		}
 		return nil
 
+	case "link.source.in_upper_layer":
+
+		var ok bool
+		if e.Link.Source.InUpperLayer, ok = value.(bool); !ok {
+			return &eval.ErrValueTypeMismatch{Field: "Link.Source.InUpperLayer"}
+		}
+		return nil
+
 	case "link.source.inode":
 
 		var ok bool
@@ -3880,16 +3774,6 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 			return &eval.ErrValueTypeMismatch{Field: "Link.Source.FileFields.Inode"}
 		}
 		e.Link.Source.FileFields.Inode = uint64(v)
-		return nil
-
-	case "link.source.overlay_numlower":
-
-		var ok bool
-		v, ok := value.(int)
-		if !ok {
-			return &eval.ErrValueTypeMismatch{Field: "Link.Source.FileFields.OverlayNumLower"}
-		}
-		e.Link.Source.FileFields.OverlayNumLower = int32(v)
 		return nil
 
 	case "link.target.basename":
@@ -3916,6 +3800,14 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 		}
 		return nil
 
+	case "link.target.in_upper_layer":
+
+		var ok bool
+		if e.Link.Target.InUpperLayer, ok = value.(bool); !ok {
+			return &eval.ErrValueTypeMismatch{Field: "Link.Target.InUpperLayer"}
+		}
+		return nil
+
 	case "link.target.inode":
 
 		var ok bool
@@ -3924,16 +3816,6 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 			return &eval.ErrValueTypeMismatch{Field: "Link.Target.FileFields.Inode"}
 		}
 		e.Link.Target.FileFields.Inode = uint64(v)
-		return nil
-
-	case "link.target.overlay_numlower":
-
-		var ok bool
-		v, ok := value.(int)
-		if !ok {
-			return &eval.ErrValueTypeMismatch{Field: "Link.Target.FileFields.OverlayNumLower"}
-		}
-		e.Link.Target.FileFields.OverlayNumLower = int32(v)
 		return nil
 
 	case "mkdir.basename":
@@ -3960,6 +3842,14 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 		}
 		return nil
 
+	case "mkdir.in_upper_layer":
+
+		var ok bool
+		if e.Mkdir.FileEvent.InUpperLayer, ok = value.(bool); !ok {
+			return &eval.ErrValueTypeMismatch{Field: "Mkdir.FileEvent.InUpperLayer"}
+		}
+		return nil
+
 	case "mkdir.inode":
 
 		var ok bool
@@ -3978,16 +3868,6 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 			return &eval.ErrValueTypeMismatch{Field: "Mkdir.Mode"}
 		}
 		e.Mkdir.Mode = uint32(v)
-		return nil
-
-	case "mkdir.overlay_numlower":
-
-		var ok bool
-		v, ok := value.(int)
-		if !ok {
-			return &eval.ErrValueTypeMismatch{Field: "Mkdir.FileEvent.FileFields.OverlayNumLower"}
-		}
-		e.Mkdir.FileEvent.FileFields.OverlayNumLower = int32(v)
 		return nil
 
 	case "mkdir.retval":
@@ -4034,6 +3914,14 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 		e.Open.Flags = uint32(v)
 		return nil
 
+	case "open.in_upper_layer":
+
+		var ok bool
+		if e.Open.FileEvent.InUpperLayer, ok = value.(bool); !ok {
+			return &eval.ErrValueTypeMismatch{Field: "Open.FileEvent.InUpperLayer"}
+		}
+		return nil
+
 	case "open.inode":
 
 		var ok bool
@@ -4052,16 +3940,6 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 			return &eval.ErrValueTypeMismatch{Field: "Open.Mode"}
 		}
 		e.Open.Mode = uint32(v)
-		return nil
-
-	case "open.overlay_numlower":
-
-		var ok bool
-		v, ok := value.(int)
-		if !ok {
-			return &eval.ErrValueTypeMismatch{Field: "Open.FileEvent.FileFields.OverlayNumLower"}
-		}
-		e.Open.FileEvent.FileFields.OverlayNumLower = int32(v)
 		return nil
 
 	case "open.retval":
@@ -4174,20 +4052,6 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 		if e.Process.Ancestor.ProcessContext.ExecEvent.BasenameStr, ok = value.(string); !ok {
 			return &eval.ErrValueTypeMismatch{Field: "Process.Ancestor.ProcessContext.ExecEvent.BasenameStr"}
 		}
-		return nil
-
-	case "process.ancestors.overlay_numlower":
-
-		if e.Process.Ancestor == nil {
-			e.Process.Ancestor = &ProcessCacheEntry{}
-		}
-
-		var ok bool
-		v, ok := value.(int)
-		if !ok {
-			return &eval.ErrValueTypeMismatch{Field: "Process.Ancestor.ProcessContext.ExecEvent.FileFields.OverlayNumLower"}
-		}
-		e.Process.Ancestor.ProcessContext.ExecEvent.FileFields.OverlayNumLower = int32(v)
 		return nil
 
 	case "process.ancestors.pid":
@@ -4332,16 +4196,6 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 		}
 		return nil
 
-	case "process.overlay_numlower":
-
-		var ok bool
-		v, ok := value.(int)
-		if !ok {
-			return &eval.ErrValueTypeMismatch{Field: "Process.ExecEvent.FileFields.OverlayNumLower"}
-		}
-		e.Process.ExecEvent.FileFields.OverlayNumLower = int32(v)
-		return nil
-
 	case "process.pid":
 
 		var ok bool
@@ -4422,6 +4276,14 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 		}
 		return nil
 
+	case "removexattr.in_upper_layer":
+
+		var ok bool
+		if e.RemoveXAttr.FileEvent.InUpperLayer, ok = value.(bool); !ok {
+			return &eval.ErrValueTypeMismatch{Field: "RemoveXAttr.FileEvent.InUpperLayer"}
+		}
+		return nil
+
 	case "removexattr.inode":
 
 		var ok bool
@@ -4446,16 +4308,6 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 		if e.RemoveXAttr.Namespace, ok = value.(string); !ok {
 			return &eval.ErrValueTypeMismatch{Field: "RemoveXAttr.Namespace"}
 		}
-		return nil
-
-	case "removexattr.overlay_numlower":
-
-		var ok bool
-		v, ok := value.(int)
-		if !ok {
-			return &eval.ErrValueTypeMismatch{Field: "RemoveXAttr.FileEvent.FileFields.OverlayNumLower"}
-		}
-		e.RemoveXAttr.FileEvent.FileFields.OverlayNumLower = int32(v)
 		return nil
 
 	case "removexattr.retval":
@@ -4492,6 +4344,14 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 		}
 		return nil
 
+	case "rename.new.in_upper_layer":
+
+		var ok bool
+		if e.Rename.New.InUpperLayer, ok = value.(bool); !ok {
+			return &eval.ErrValueTypeMismatch{Field: "Rename.New.InUpperLayer"}
+		}
+		return nil
+
 	case "rename.new.inode":
 
 		var ok bool
@@ -4500,16 +4360,6 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 			return &eval.ErrValueTypeMismatch{Field: "Rename.New.FileFields.Inode"}
 		}
 		e.Rename.New.FileFields.Inode = uint64(v)
-		return nil
-
-	case "rename.new.overlay_numlower":
-
-		var ok bool
-		v, ok := value.(int)
-		if !ok {
-			return &eval.ErrValueTypeMismatch{Field: "Rename.New.FileFields.OverlayNumLower"}
-		}
-		e.Rename.New.FileFields.OverlayNumLower = int32(v)
 		return nil
 
 	case "rename.old.basename":
@@ -4536,6 +4386,14 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 		}
 		return nil
 
+	case "rename.old.in_upper_layer":
+
+		var ok bool
+		if e.Rename.Old.InUpperLayer, ok = value.(bool); !ok {
+			return &eval.ErrValueTypeMismatch{Field: "Rename.Old.InUpperLayer"}
+		}
+		return nil
+
 	case "rename.old.inode":
 
 		var ok bool
@@ -4544,16 +4402,6 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 			return &eval.ErrValueTypeMismatch{Field: "Rename.Old.FileFields.Inode"}
 		}
 		e.Rename.Old.FileFields.Inode = uint64(v)
-		return nil
-
-	case "rename.old.overlay_numlower":
-
-		var ok bool
-		v, ok := value.(int)
-		if !ok {
-			return &eval.ErrValueTypeMismatch{Field: "Rename.Old.FileFields.OverlayNumLower"}
-		}
-		e.Rename.Old.FileFields.OverlayNumLower = int32(v)
 		return nil
 
 	case "rename.retval":
@@ -4590,6 +4438,14 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 		}
 		return nil
 
+	case "rmdir.in_upper_layer":
+
+		var ok bool
+		if e.Rmdir.FileEvent.InUpperLayer, ok = value.(bool); !ok {
+			return &eval.ErrValueTypeMismatch{Field: "Rmdir.FileEvent.InUpperLayer"}
+		}
+		return nil
+
 	case "rmdir.inode":
 
 		var ok bool
@@ -4598,16 +4454,6 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 			return &eval.ErrValueTypeMismatch{Field: "Rmdir.FileEvent.FileFields.Inode"}
 		}
 		e.Rmdir.FileEvent.FileFields.Inode = uint64(v)
-		return nil
-
-	case "rmdir.overlay_numlower":
-
-		var ok bool
-		v, ok := value.(int)
-		if !ok {
-			return &eval.ErrValueTypeMismatch{Field: "Rmdir.FileEvent.FileFields.OverlayNumLower"}
-		}
-		e.Rmdir.FileEvent.FileFields.OverlayNumLower = int32(v)
 		return nil
 
 	case "rmdir.retval":
@@ -4644,6 +4490,14 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 		}
 		return nil
 
+	case "setxattr.in_upper_layer":
+
+		var ok bool
+		if e.SetXAttr.FileEvent.InUpperLayer, ok = value.(bool); !ok {
+			return &eval.ErrValueTypeMismatch{Field: "SetXAttr.FileEvent.InUpperLayer"}
+		}
+		return nil
+
 	case "setxattr.inode":
 
 		var ok bool
@@ -4668,16 +4522,6 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 		if e.SetXAttr.Namespace, ok = value.(string); !ok {
 			return &eval.ErrValueTypeMismatch{Field: "SetXAttr.Namespace"}
 		}
-		return nil
-
-	case "setxattr.overlay_numlower":
-
-		var ok bool
-		v, ok := value.(int)
-		if !ok {
-			return &eval.ErrValueTypeMismatch{Field: "SetXAttr.FileEvent.FileFields.OverlayNumLower"}
-		}
-		e.SetXAttr.FileEvent.FileFields.OverlayNumLower = int32(v)
 		return nil
 
 	case "setxattr.retval":
@@ -4724,6 +4568,14 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 		e.Unlink.Flags = uint32(v)
 		return nil
 
+	case "unlink.in_upper_layer":
+
+		var ok bool
+		if e.Unlink.FileEvent.InUpperLayer, ok = value.(bool); !ok {
+			return &eval.ErrValueTypeMismatch{Field: "Unlink.FileEvent.InUpperLayer"}
+		}
+		return nil
+
 	case "unlink.inode":
 
 		var ok bool
@@ -4732,16 +4584,6 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 			return &eval.ErrValueTypeMismatch{Field: "Unlink.FileEvent.FileFields.Inode"}
 		}
 		e.Unlink.FileEvent.FileFields.Inode = uint64(v)
-		return nil
-
-	case "unlink.overlay_numlower":
-
-		var ok bool
-		v, ok := value.(int)
-		if !ok {
-			return &eval.ErrValueTypeMismatch{Field: "Unlink.FileEvent.FileFields.OverlayNumLower"}
-		}
-		e.Unlink.FileEvent.FileFields.OverlayNumLower = int32(v)
 		return nil
 
 	case "unlink.retval":
@@ -4778,6 +4620,14 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 		}
 		return nil
 
+	case "utimes.in_upper_layer":
+
+		var ok bool
+		if e.Utimes.FileEvent.InUpperLayer, ok = value.(bool); !ok {
+			return &eval.ErrValueTypeMismatch{Field: "Utimes.FileEvent.InUpperLayer"}
+		}
+		return nil
+
 	case "utimes.inode":
 
 		var ok bool
@@ -4786,16 +4636,6 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 			return &eval.ErrValueTypeMismatch{Field: "Utimes.FileEvent.FileFields.Inode"}
 		}
 		e.Utimes.FileEvent.FileFields.Inode = uint64(v)
-		return nil
-
-	case "utimes.overlay_numlower":
-
-		var ok bool
-		v, ok := value.(int)
-		if !ok {
-			return &eval.ErrValueTypeMismatch{Field: "Utimes.FileEvent.FileFields.OverlayNumLower"}
-		}
-		e.Utimes.FileEvent.FileFields.OverlayNumLower = int32(v)
 		return nil
 
 	case "utimes.retval":
