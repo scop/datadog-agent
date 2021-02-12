@@ -838,6 +838,8 @@ github.com/grpc-ecosystem/grpc-health-probe v0.2.0/go.mod h1:4GVx/bTCtZaSzhjbGue
 github.com/grpc-ecosystem/grpc-health-probe v0.2.1-0.20181220223928-2bf0a5b182db/go.mod h1:uBKkC2RbarFsvS5jMJHpVhTLvGlGQj9JJwkaePE3FWI=
 github.com/grpc/grpc-go v1.26.0 h1:FCo5Ex7GxnUTBNQ3SAY2Vo9IWCgPgJ/tL1eVF3khgbU=
 github.com/grpc/grpc-go v1.26.0/go.mod h1:qbnxyOmOxrQa7FizSgH+ReBfzJrCY1pSN7KXBS8abTk=
+github.com/grpc/grpc-go v1.27.0 h1:b0Uea93H2+7nHrphFEzYR0o39bvYjYSj598W4dXfKbM=
+github.com/grpc/grpc-go v1.27.0/go.mod h1:qbnxyOmOxrQa7FizSgH+ReBfzJrCY1pSN7KXBS8abTk=
 github.com/h2non/filetype v1.0.5/go.mod h1:isekKqOuhMj+s/7r3rIeTErIRy4Rub5uBWHfvMusLMU=
 github.com/h2non/filetype v1.1.0 h1:Or/gjocJrJRNK/Cri/TDEKFjAR+cfG6eK65NGYB6gBA=
 github.com/h2non/filetype v1.1.0/go.mod h1:319b3zT68BvV+WRj7cwy856M2ehB3HqNOt6sy1HndBY=

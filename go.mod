@@ -19,10 +19,10 @@ replace (
 	github.com/ugorji/go => github.com/ugorji/go v1.1.7
 )
 
-// pinned to grpc v1.26.0
+// pinned to grpc v1.27.0
 replace (
 	github.com/grpc-ecosystem/grpc-gateway => github.com/grpc-ecosystem/grpc-gateway v1.12.2
-	google.golang.org/grpc => github.com/grpc/grpc-go v1.26.0
+	google.golang.org/grpc => github.com/grpc/grpc-go v1.27.0
 )
 
 require (
