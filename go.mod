@@ -47,6 +47,7 @@ require (
 	github.com/DataDog/gohai v0.0.0-20200605003749-e17d616e422a
 	github.com/DataDog/gopsutil v0.0.0-20200624212600-1b53412ef321
 	github.com/DataDog/mmh3 v0.0.0-20200316233529-f5b682d8c981 // indirect
+	github.com/DataDog/nikos v0.0.0-20210212215538-830c817043ae
 	github.com/DataDog/sketches-go v1.0.0
 	github.com/DataDog/watermarkpodautoscaler v0.1.0
 	github.com/DataDog/zstd v0.0.0-20160706220725-2bf71ec48360
@@ -136,7 +137,7 @@ require (
 	github.com/shirou/gopsutil v3.20.10+incompatible
 	github.com/shirou/w32 v0.0.0-20160930032740-bb4de0191aa4
 	github.com/shuLhan/go-bindata v3.6.1+incompatible
-	github.com/sirupsen/logrus v1.7.0 // indirect
+	github.com/smira/go-xz v0.0.0-20201019130106-9921ed7a9935 // indirect
 	github.com/soniah/gosnmp v1.26.0
 	github.com/spf13/afero v1.2.2
 	github.com/spf13/cobra v1.0.0
@@ -167,8 +168,8 @@ require (
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
 	golang.org/x/tools v0.0.0-20210114065538-d78b04bdf963
 	gomodules.xyz/jsonpatch/v3 v3.0.1
-	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013
-	google.golang.org/grpc v1.27.1
+	google.golang.org/genproto v0.0.0-20200921151605-7abf4a1a14d5
+	google.golang.org/grpc v1.32.0
 	gopkg.in/DataDog/dd-trace-go.v1 v1.23.1
 	gopkg.in/Knetic/govaluate.v3 v3.0.0 // indirect
 	gopkg.in/ini.v1 v1.55.0 // indirect
@@ -221,3 +222,5 @@ replace (
 
 // bitbucket.org/ww/goautoneg has disappeared. Remove this when we bump the watermarkpodautoscaler dependency to 2.0.0+
 replace bitbucket.org/ww/goautoneg => github.com/munnerz/goautoneg v0.0.0-20190414153302-2ae31c8b6b30
+
+replace github.com/aptly-dev/aptly => github.com/lebauce/aptly v0.7.2-0.20201005164315-09522984a976
