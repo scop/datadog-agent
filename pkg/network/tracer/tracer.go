@@ -119,18 +119,18 @@ func NewTracer(config *config.Config) (*Tracer, error) {
 
 	runtimeTracer := false
 	var buf bytecode.AssetReader
-	if config.EnableRuntimeCompiler {
-		buf, err = getRuntimeCompiledTracer(config)
-		if err != nil {
-			if !config.AllowPrecompiledFallback {
-				return nil, fmt.Errorf("error compiling network tracer: %s", err)
-			}
-			log.Warnf("error compiling network tracer, falling back to pre-compiled: %s", err)
-		} else {
-			runtimeTracer = true
-			defer buf.Close()
+	// if config.EnableRuntimeCompiler {
+	buf, err = getRuntimeCompiledTracer(config)
+	if err != nil {
+		if !config.AllowPrecompiledFallback {
+			return nil, fmt.Errorf("error compiling network tracer: %s", err)
 		}
+		log.Warnf("error compiling network tracer, falling back to pre-compiled: %s", err)
+	} else {
+		runtimeTracer = true
+		defer buf.Close()
 	}
+	// }
 
 	// Use the config to determine what kernel probes should be enabled
 	enabledProbes, err := config.EnabledProbes(runtimeTracer)

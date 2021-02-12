@@ -141,16 +141,16 @@ func NewEBPFCompiler(headerDirs []string, verbose bool) (*EBPFCompiler, error) {
 			break
 		}
 	} else {
-		dirs, err = kernel.FindHeaderDirs()
+		// dirs, err = kernel.FindHeaderDirs()
+		// if err != nil {
+		log.Infof("Unable to find kernel headers: %s. Attempting to download kernel headers", err)
+		dirs, err = kernel.DownloadHeaders(kernelHeaderDownloadDirectory)
 		if err != nil {
-			log.Infof("Unable to find kernel headers: %s. Attempting to download kernel headers", err)
-			dirs, err = kernel.DownloadHeaders(kernelHeaderDownloadDirectory)
-			if err != nil {
-				ebpfCompiler.Close()
-				return nil, fmt.Errorf("unable to download kernel headers: %s", err)
-			}
-			log.Infof("Successfully downloaded kernel headers to %s", kernelHeaderDownloadDirectory)
+			ebpfCompiler.Close()
+			return nil, fmt.Errorf("unable to download kernel headers: %s", err)
 		}
+		log.Infof("Successfully downloaded kernel headers to %s", kernelHeaderDownloadDirectory)
+		// }
 	}
 
 	if len(dirs) == 0 {
