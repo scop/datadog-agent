@@ -86,7 +86,7 @@ PROCESS_AGENT_TAGS = AGENT_TAGS.union(set(["clusterchecks", "fargateprocess", "o
 SECURITY_AGENT_TAGS = set(["netcgo", "secrets", "docker", "kubeapiserver", "kubelet",])
 
 # PROCESS_AGENT_TAGS lists the tags necessary to build system-probe
-SYSTEM_PROBE_TAGS = AGENT_TAGS.union(set(["clusterchecks", "linux_bpf",]))
+SYSTEM_PROBE_TAGS = AGENT_TAGS.union(set(["clusterchecks", "linux_bpf"]))
 
 # TRACE_AGENT_TAGS lists the tags that have to be added when the trace-agent
 TRACE_AGENT_TAGS = set(["docker", "kubeapiserver", "kubelet", "netcgo", "secrets",])

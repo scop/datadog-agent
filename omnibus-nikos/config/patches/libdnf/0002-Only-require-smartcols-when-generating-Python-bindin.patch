@@ -1,0 +1,48 @@
+From 0181888db18ed19c61ac8020579e110e7b150b9b Mon Sep 17 00:00:00 2001
+From: Sylvain Baubeau <lebauce@gmail.com>
+Date: Wed, 14 Oct 2020 23:33:06 +0200
+Subject: [PATCH 2/4] Only require smartcols when generating Python bindings
+
+---
+ CMakeLists.txt              | 2 +-
+ libdnf/utils/CMakeLists.txt | 4 +++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 40d64fc4..4aafddc3 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -65,7 +65,6 @@ pkg_check_modules(REPO REQUIRED librepo>=0.11.0)
+ include_directories(${REPO_INCLUDE_DIRS})
+ link_directories(${REPO_LIBRARY_DIRS})
+ pkg_check_modules(RPM REQUIRED rpm>=4.11.0)
+-pkg_check_modules(SMARTCOLS REQUIRED smartcols)
+ pkg_check_modules(SQLite3 REQUIRED sqlite3)
+ 
+ # always enable linking with libdnf utils
+@@ -93,6 +92,7 @@ endif()
+ 
+ # python
+ if(WITH_BINDINGS)
++    pkg_check_modules(SMARTCOLS REQUIRED smartcols)
+     if(NOT PYTHON_DESIRED)
+         find_package(PythonInterp REQUIRED)
+     elseif(${PYTHON_DESIRED} STREQUAL "2")
+diff --git a/libdnf/utils/CMakeLists.txt b/libdnf/utils/CMakeLists.txt
+index d7061cb0..848c707a 100644
+--- a/libdnf/utils/CMakeLists.txt
++++ b/libdnf/utils/CMakeLists.txt
+@@ -3,7 +3,9 @@ add_subdirectory(crypto)
+ add_subdirectory(iniparser)
+ add_subdirectory(regex)
+ add_subdirectory(sqlite3)
+-add_subdirectory(smartcols)
++if(WITH_BINDINGS)
++    add_subdirectory(smartcols)
++endif()
+ 
+ set(UTILS_SOURCES
+     ${UTILS_SOURCES}
+-- 
+2.26.2
+

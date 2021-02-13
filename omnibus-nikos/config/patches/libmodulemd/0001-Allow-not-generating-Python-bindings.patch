@@ -1,0 +1,66 @@
+From 513ef1452abeb02ac68230fba89c009f7e15b566 Mon Sep 17 00:00:00 2001
+From: Sylvain Baubeau <lebauce@gmail.com>
+Date: Wed, 14 Oct 2020 19:02:19 +0200
+Subject: [PATCH] Allow not generating Python bindings
+
+---
+ bindings/python/meson.build | 3 ---
+ meson.build                 | 9 ++++++++-
+ meson_options.txt           | 3 +++
+ 3 files changed, 11 insertions(+), 4 deletions(-)
+
+diff --git a/bindings/python/meson.build b/bindings/python/meson.build
+index 6962c50..801ff24 100644
+--- a/bindings/python/meson.build
++++ b/bindings/python/meson.build
+@@ -1,6 +1,3 @@
+-gobject_overrides_dir_py3 = get_option('gobject_overrides_dir_py3')
+-gobject_overrides_dir_py2 = get_option('gobject_overrides_dir_py2')
+-
+ # Python 3
+ if gobject_overrides_dir_py3 == ''
+   ret = run_command([python3, '-c', 'import gi; print(gi._overridesdir)'])
+diff --git a/meson.build b/meson.build
+index 9ef7083..d4cc755 100644
+--- a/meson.build
++++ b/meson.build
+@@ -54,6 +54,10 @@ yaml = dependency('yaml-0.1')
+ with_rpmio = get_option('rpmio')
+ with_libmagic = get_option('libmagic')
+ 
++with_python_bindings = get_option('with_python_bindings')
++gobject_overrides_dir_py3 = get_option('gobject_overrides_dir_py3')
++gobject_overrides_dir_py2 = get_option('gobject_overrides_dir_py2')
++
+ rpm = dependency('rpm', required : with_rpmio)
+ magic = cc.find_library('magic', required : with_libmagic)
+ 
+@@ -173,7 +177,10 @@ configure_file(
+ )
+ 
+ subdir('modulemd')
+-subdir('bindings/python')
++
++if with_python_bindings
++    subdir('bindings/python')
++endif
+ 
+ if meson.version().version_compare('>=0.53')
+     if magic.found()
+diff --git a/meson_options.txt b/meson_options.txt
+index 9a99721..f16d906 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -17,6 +17,9 @@ option('developer_build', type : 'boolean', value : true,
+ option('libmagic', type : 'feature', value : 'enabled',
+        description : 'Enables the use of libmagic to detect compression of YAML files.')
+ 
++option('with_python_bindings', type : 'boolean', value : true,
++       description : 'Generate Python bindings.')
++
+ option('python_name', type : 'string',
+        description : 'The name of the Python 3 interpreter to use for generating Python bindings and running tests. If left blank, it defaults to the version of Python 3 being used to run meson.')
+ 
+-- 
+2.26.2
+

@@ -1,0 +1,17 @@
+diff --git a/Makefile b/Makefile
+index 4156ac6..7e178f2 100644
+--- a/Makefile
++++ b/Makefile
+@@ -25,7 +25,11 @@ export DESTDIR SBINDIR LIBDIR CONFDIR MANDIR DOCDIR INCLUDEDIR PKGCONFIGDIR
+ ##
+ # Top-level subdirs
+ 
+-subdirs		:= libfetch/ src/ doc/
++subdirs		:= libfetch/ src/
++
++ifneq ($(DOC),no)
++      subdirs += doc/
++endif
+ 
+ ##
+ # Include all rules and stuff

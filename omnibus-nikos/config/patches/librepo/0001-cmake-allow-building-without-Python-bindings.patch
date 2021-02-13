@@ -1,0 +1,73 @@
+From 70e2bdb9e2c44f65a297fc712620c83a4df81868 Mon Sep 17 00:00:00 2001
+From: Sylvain Baubeau <lebauce@gmail.com>
+Date: Wed, 14 Oct 2020 00:32:17 +0200
+Subject: [PATCH] cmake: allow building without Python bindings
+
+---
+ CMakeLists.txt         | 30 ++++++++++++++++--------------
+ librepo/CMakeLists.txt |  4 +++-
+ 2 files changed, 19 insertions(+), 15 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 2dcf877..09dac4d 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -4,6 +4,7 @@ CMAKE_MINIMUM_REQUIRED (VERSION 2.8.5)
+ OPTION (ENABLE_TESTS "Build test?" ON)
+ OPTION (ENABLE_DOCS "Build docs?" ON)
+ OPTION (WITH_ZCHUNK "Build with zchunk support" ON)
++OPTION (ENABLE_PYTHON "Build Python bindings" ON)
+ 
+ INCLUDE (${CMAKE_SOURCE_DIR}/VERSION.cmake)
+ SET (VERSION "${LIBREPO_MAJOR}.${LIBREPO_MINOR}.${LIBREPO_PATCH}")
+@@ -66,20 +67,21 @@ INCLUDE_DIRECTORIES(${CURL_INCLUDE_DIR})
+ include (GNUInstallDirs)
+ # Python stuff
+ 
+-IF (NOT PYTHON_DESIRED)
+-    FIND_PACKAGE (PythonInterp REQUIRED)
+-ELSEIF (${PYTHON_DESIRED} STREQUAL "2")
+-    FIND_PACKAGE (PythonInterp 2 EXACT REQUIRED)
+-ELSEIF (${PYTHON_DESIRED} STREQUAL "3")
+-    FIND_PACKAGE (PythonInterp 3 EXACT REQUIRED)
+-ELSEIF (EXISTS ${PYTHON_DESIRED})
+-    SET (PYTHON_EXECUTABLE ${PYTHON_DESIRED})
+-    FIND_PACKAGE (PythonInterp REQUIRED)
+-ELSE ()
+-    MESSAGE (FATAL_ERROR "Invalid PYTHON_DESIRED value: " ${PYTHON_DESIRED})
+-ENDIF()
+-FIND_PACKAGE (PythonLibs REQUIRED)
+-
++IF (ENABLE_PYTHON)
++    IF (NOT PYTHON_DESIRED)
++        FIND_PACKAGE (PythonInterp REQUIRED)
++    ELSEIF (${PYTHON_DESIRED} STREQUAL "2")
++        FIND_PACKAGE (PythonInterp 2 EXACT REQUIRED)
++    ELSEIF (${PYTHON_DESIRED} STREQUAL "3")
++        FIND_PACKAGE (PythonInterp 3 EXACT REQUIRED)
++    ELSEIF (EXISTS ${PYTHON_DESIRED})
++        SET (PYTHON_EXECUTABLE ${PYTHON_DESIRED})
++        FIND_PACKAGE (PythonInterp REQUIRED)
++    ELSE ()
++        MESSAGE (FATAL_ERROR "Invalid PYTHON_DESIRED value: " ${PYTHON_DESIRED})
++    ENDIF()
++    FIND_PACKAGE (PythonLibs REQUIRED)
++ENDIF (ENABLE_PYTHON)
+ 
+ # Subdirs
+ 
+diff --git a/librepo/CMakeLists.txt b/librepo/CMakeLists.txt
+index 73edf70..4f00a5e 100644
+--- a/librepo/CMakeLists.txt
++++ b/librepo/CMakeLists.txt
+@@ -73,4 +73,6 @@ INSTALL(TARGETS librepo LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+ INSTALL(FILES "${CMAKE_BINARY_DIR}/librepo.pc"
+ 	DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+ 
+-ADD_SUBDIRECTORY(python)
++IF (ENABLE_PYTHON)
++    ADD_SUBDIRECTORY(python)
++ENDIF (ENABLE_PYTHON)
+-- 
+2.26.2
+

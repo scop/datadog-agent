@@ -1,0 +1,36 @@
+From 110a2bb3360b4ae0e76ce1d8183c9f9dbe3b9a79 Mon Sep 17 00:00:00 2001
+From: Sylvain Baubeau <lebauce@gmail.com>
+Date: Wed, 14 Oct 2020 17:39:56 +0200
+Subject: [PATCH] Allow not building the CLI tools
+
+---
+ CMakeLists.txt | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 8b87c549..14d4181e 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -10,6 +10,8 @@ OPTION (ENABLE_PYTHON "Build the python bindings?" OFF)
+ OPTION (ENABLE_RUBY "Build the ruby bindings?" OFF)
+ OPTION (ENABLE_TCL "Build the Tcl bindings?" OFF)
+ 
++OPTION (ENABLE_TOOLS "Build the CLI tools" ON)
++
+ OPTION (USE_VENDORDIRS "Install the bindings in vendor directories?" OFF)
+ 
+ OPTION (ENABLE_RPMDB "Build with rpm database support?" OFF)
+@@ -411,7 +413,9 @@ ENDIF (HAVE_LINKER_AS_NEEDED)
+ 
+ ADD_SUBDIRECTORY (src)
+ ADD_SUBDIRECTORY (ext)
+-ADD_SUBDIRECTORY (tools)
++IF (ENABLE_TOOLS)
++    ADD_SUBDIRECTORY (tools)
++ENDIF (ENABLE_TOOLS)
+ IF (ENABLE_PERL OR ENABLE_PYTHON OR ENABLE_RUBY OR ENABLE_TCL)
+     ADD_SUBDIRECTORY (bindings)
+ ENDIF (ENABLE_PERL OR ENABLE_PYTHON OR ENABLE_RUBY OR ENABLE_TCL)
+-- 
+2.26.2
+

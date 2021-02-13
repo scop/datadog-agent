@@ -1,0 +1,26 @@
+From a8ba95a572ed12778427b29ab07da9b00b3c9922 Mon Sep 17 00:00:00 2001
+From: Sylvain Baubeau <lebauce@gmail.com>
+Date: Wed, 14 Oct 2020 23:41:39 +0200
+Subject: [PATCH 4/4] Do not set unknown pool flat
+ POOL_FLAG_WHATPROVIDESWITHDISABLED
+
+---
+ libdnf/dnf-sack.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libdnf/dnf-sack.cpp b/libdnf/dnf-sack.cpp
+index 025988b4..80fc5f0a 100644
+--- a/libdnf/dnf-sack.cpp
++++ b/libdnf/dnf-sack.cpp
+@@ -184,7 +184,7 @@ dnf_sack_init(DnfSack *sack)
+ {
+     DnfSackPrivate *priv = GET_PRIVATE(sack);
+     priv->pool = pool_create();
+-    pool_set_flag(priv->pool, POOL_FLAG_WHATPROVIDESWITHDISABLED, 1);
++    // pool_set_flag(priv->pool, POOL_FLAG_WHATPROVIDESWITHDISABLED, 1);
+     priv->running_kernel_id = -1;
+     priv->running_kernel_fn = running_kernel;
+     priv->considered_uptodate = TRUE;
+-- 
+2.26.2
+
