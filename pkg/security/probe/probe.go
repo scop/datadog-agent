@@ -10,9 +10,11 @@ package probe
 import (
 	"context"
 	"fmt"
+	"github.com/DataDog/datadog-agent/pkg/security/utils"
 	"math"
 	"math/rand"
 	"os"
+	"path"
 	"runtime"
 	"strings"
 	"sync/atomic"
@@ -490,6 +492,9 @@ func (p *Probe) handleEvent(CPU uint64, data []byte) {
 		event.updateProcessCachePointer(p.resolvers.ProcessResolver.AddEntry(event.Process.Pid, event.processCacheEntry))
 	case ExitEventType:
 		defer p.resolvers.ProcessResolver.DeleteEntry(event.Process.Pid, event.ResolveEventTimestamp())
+	case GoroutineTrackerEventType:
+		p.setupGoroutineTracker(event)
+		return
 	default:
 		log.Errorf("unsupported event type %d", eventType)
 		return
@@ -748,6 +753,23 @@ func (p *Probe) IsInvalidDiscarder(field eval.Field, value interface{}) bool {
 	return values[value]
 }
 
+// setupGoroutineTracker inserts a goroutine tracking uprobe in the requested program
+func (p *Probe) setupGoroutineTracker(event *Event) {
+	pce := event.ResolveProcessCacheEntry()
+	if pce == nil {
+		return
+	}
+
+	// create the new probe
+	if err := p.manager.AddHook(probes.SecurityAgentUID, manager.Probe{
+		UID:        probes.SecurityAgentUID + "_" + utils.RandString(5),
+		Section:    probes.GetGoroutineTrackerSection(),
+		BinaryPath: path.Join(pce.ResolveContainerPath(event), pce.ResolveInode(event)),
+	}); err != nil {
+		log.Warnf("failed to add goroutine tracker uprobe: %v", err)
+	}
+}
+
 // rearrange invalid discarders for fast lookup
 func getInvalidDiscarders() map[eval.Field]map[interface{}]bool {
 	invalidDiscarders := make(map[eval.Field]map[interface{}]bool)
@@ -815,7 +837,6 @@ func NewProbe(config *config.Config, client *statsd.Client) (*Probe, error) {
 			Value: getMountIDOffset(p),
 		},
 	)
-	p.managerOptions.ConstantEditors = append(p.managerOptions.ConstantEditors, p.erpc.GetConstants()...)
 
 	resolvers, err := NewResolvers(p, client)
 	if err != nil {

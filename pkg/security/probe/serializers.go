@@ -10,6 +10,7 @@
 package probe
 
 import (
+	"fmt"
 	"syscall"
 	"time"
 )
@@ -55,6 +56,8 @@ type ProcessCacheEntrySerializer struct {
 	Tid           uint32     `json:"tid"`
 	UID           uint32     `json:"uid"`
 	GID           uint32     `json:"gid"`
+	SpanID        string     `json:"span_id,omitempty"`
+	TraceID       string     `json:"trace_id,omitempty"`
 	Name          string     `json:"name"`
 	ContainerPath string     `json:"executable_container_path,omitempty"`
 	Path          string     `json:"executable_path"`
@@ -151,6 +154,7 @@ func getTimeIfNotZero(t time.Time) *time.Time {
 
 func newProcessCacheEntrySerializer(pce *ProcessCacheEntry, e *Event, useEvent bool) *ProcessCacheEntrySerializer {
 	var pid, ppid, tid, uid, gid uint32
+	var spanID, traceID uint64
 	var user, group string
 
 	if useEvent {
@@ -159,6 +163,8 @@ func newProcessCacheEntrySerializer(pce *ProcessCacheEntry, e *Event, useEvent b
 		tid = e.Process.Tid
 		uid = e.Process.UID
 		gid = e.Process.GID
+		spanID = e.Process.SpanID
+		traceID = e.Process.TraceID
 		user = e.Process.ResolveUser(e)
 		group = e.Process.ResolveGroup(e)
 	} else {
@@ -167,8 +173,23 @@ func newProcessCacheEntrySerializer(pce *ProcessCacheEntry, e *Event, useEvent b
 		tid = pce.Tid
 		uid = pce.UID
 		gid = pce.GID
+		spanID = pce.SpanID
+		traceID = pce.TraceID
 		user = pce.ResolveUser(e)
 		group = pce.ResolveGroup(e)
+	}
+
+	if spanID == 0 && traceID == 0 {
+		spanID = pce.ForkSpanID
+		traceID = pce.ForkTraceID
+	}
+
+	var spanIDStr, traceIDStr string
+	if spanID > 0 {
+		spanIDStr = fmt.Sprintf("%v", spanID)
+	}
+	if traceID > 0 {
+		traceIDStr = fmt.Sprintf("%v", traceID)
 	}
 
 	return &ProcessCacheEntrySerializer{
@@ -181,6 +202,8 @@ func newProcessCacheEntrySerializer(pce *ProcessCacheEntry, e *Event, useEvent b
 		Tid:      tid,
 		UID:      uid,
 		GID:      gid,
+		SpanID:   spanIDStr,
+		TraceID:  traceIDStr,
 		Name:     pce.Comm,
 		Path:     pce.ResolveInode(e),
 		Inode:    pce.Inode,

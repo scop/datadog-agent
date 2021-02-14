@@ -43,6 +43,7 @@ static int (*bpf_get_current_comm)(void* buf, int buf_size) = (void*)BPF_FUNC_ge
 static int (*bpf_perf_event_read)(void* map, int index) = (void*)BPF_FUNC_perf_event_read;
 static int (*bpf_clone_redirect)(void* ctx, int ifindex, int flags) = (void*)BPF_FUNC_clone_redirect;
 static int (*bpf_redirect)(int ifindex, int flags) = (void*)BPF_FUNC_redirect;
+static int (*bpf_get_stack)(void *ctx, void *buf, int size, int flags) = (void *) BPF_FUNC_get_stack;
 static int (*bpf_perf_event_output)(void* ctx, void* map,
     unsigned long long flags, void* data,
     int size)

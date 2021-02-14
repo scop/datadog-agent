@@ -96,6 +96,8 @@ github.com/DataDog/ebpf v0.0.0-20210104093318-524278fe0bfe h1:xIQF3z6+bD1Q+K7TCA
 github.com/DataDog/ebpf v0.0.0-20210104093318-524278fe0bfe/go.mod h1:rIVS3jqxhqtYJtznvFI8qtCbYG1M7WQZS4Z15/nCmOI=
 github.com/DataDog/ebpf v0.0.0-20210105142228-437eab38189d h1:FCSp3GWrMD+dTCinb/E5JrV5z9xBB/2wDHZVG9CoWq4=
 github.com/DataDog/ebpf v0.0.0-20210105142228-437eab38189d/go.mod h1:VSpIdBT/hwSbP3xKa5eYtiiBN2E37YePfTuyQVzSSig=
+github.com/DataDog/ebpf v0.0.0-20210212133738-cac384f11fff h1:tcBo+cJy9pkXiDISPWMXylabQQEbEzWZ9CLICtxIN5w=
+github.com/DataDog/ebpf v0.0.0-20210212133738-cac384f11fff/go.mod h1:VSpIdBT/hwSbP3xKa5eYtiiBN2E37YePfTuyQVzSSig=
 github.com/DataDog/gobpf v0.0.0-20200907093925-5f8313cb4d71 h1:0TOAH3X9tEvMBVQ1HYrQfrnAUcSS1mfMrhqeN+spV1s=
 github.com/DataDog/gobpf v0.0.0-20200907093925-5f8313cb4d71/go.mod h1:rNvi5cSHdpxN6495MOYAWN3yukac8lORoluL+9Osrsw=
 github.com/DataDog/gohai v0.0.0-20200605003749-e17d616e422a h1:BkU6uq4Ib7Kp1zP7MT33IdHZQazC+kxbuTyEmgePyyA=

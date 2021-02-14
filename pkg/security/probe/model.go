@@ -616,8 +616,10 @@ type ExecEvent struct {
 	// pid_cache_t
 	ForkTimestamp time.Time `field:"-"`
 	ExitTimestamp time.Time `field:"-"`
-	Cookie        uint32    `field:"cookie" handler:"ResolveCookie,int"`
-	PPid          uint32    `field:"ppid" handler:"ResolvePPID,int"`
+	ForkSpanID    uint64 `field:"-"`
+	ForkTraceID   uint64 `field:"-"`
+	Cookie        uint32 `field:"cookie" handler:"ResolveCookie,int"`
+	PPid          uint32 `field:"ppid" handler:"ResolvePPID,int"`
 
 	// The following fields should only be used here for evaluation
 	UID   uint32 `field:"uid" handler:"ResolveUID,int"`
@@ -628,7 +630,7 @@ type ExecEvent struct {
 
 // UnmarshalBinary unmarshals a binary representation of itself
 func (e *ExecEvent) UnmarshalBinary(data []byte, resolvers *Resolvers) (int, error) {
-	if len(data) < 136 {
+	if len(data) < 152 {
 		return 0, ErrNotEnoughData
 	}
 
@@ -656,6 +658,8 @@ func (e *ExecEvent) UnmarshalBinary(data []byte, resolvers *Resolvers) (int, err
 	e.PPid = ebpf.ByteOrder.Uint32(data[read+4 : read+8])
 	e.ForkTimestamp = resolvers.TimeResolver.ResolveMonotonicTimestamp(ebpf.ByteOrder.Uint64(data[read+8 : read+16]))
 	e.ExitTimestamp = resolvers.TimeResolver.ResolveMonotonicTimestamp(ebpf.ByteOrder.Uint64(data[read+16 : read+24]))
+	e.ForkSpanID = ebpf.ByteOrder.Uint64(data[read+24 : read+32])
+	e.ForkTraceID = ebpf.ByteOrder.Uint64(data[read+32 : read+40])
 
 	// resolve FileEvent now so that the dentry cache is up to date
 	if e.FileEvent.Inode != 0 && e.FileEvent.MountID != 0 {
@@ -663,10 +667,9 @@ func (e *ExecEvent) UnmarshalBinary(data []byte, resolvers *Resolvers) (int, err
 		e.FileEvent.ResolveContainerPathWithResolvers(resolvers)
 	}
 
-	// ignore uid / gid, it has already been parsed in Event.Process
-	// add 8 to the total
+	// ignore uid / gid, it has already been parsed in Event.Process (8 bytes)
 
-	return read + 32, nil
+	return read + 48, nil
 }
 
 // UnmarshalEvent unmarshal an ExecEvent
@@ -847,6 +850,9 @@ func (e *InvalidateDentryEvent) UnmarshalBinary(data []byte) (int, error) {
 	return 16, nil
 }
 
+// GoroutineTrackerEvent defines the event sent by the golang APM library to request a goroutine tracker
+type GoroutineTrackerEvent struct{}
+
 // ProcessCacheEntry this structure holds the container context that we keep in kernel for each process
 type ProcessCacheEntry struct {
 	ContainerContext
@@ -871,6 +877,9 @@ type ProcessContext struct {
 	Tid uint32 `field:"tid"`
 	UID uint32 `field:"uid"`
 	GID uint32 `field:"gid"`
+
+	SpanID  uint64 `field:"span_id"`
+	TraceID uint64 `field:"trace_id"`
 
 	Parent *ProcessCacheEntry `field:"ancestors" iterator:"ProcessAncestorsIterator"`
 }
@@ -900,7 +909,7 @@ func (it *ProcessAncestorsIterator) Next() unsafe.Pointer {
 
 // UnmarshalBinary unmarshals a binary representation of itself
 func (p *ProcessContext) UnmarshalBinary(data []byte) (int, error) {
-	if len(data) < 16 {
+	if len(data) < 32 {
 		return 0, ErrNotEnoughData
 	}
 
@@ -908,8 +917,10 @@ func (p *ProcessContext) UnmarshalBinary(data []byte) (int, error) {
 	p.Tid = ebpf.ByteOrder.Uint32(data[4:8])
 	p.UID = ebpf.ByteOrder.Uint32(data[8:12])
 	p.GID = ebpf.ByteOrder.Uint32(data[12:16])
+	p.SpanID = ebpf.ByteOrder.Uint64(data[16:24])
+	p.TraceID = ebpf.ByteOrder.Uint64(data[24:32])
 
-	return 16, nil
+	return 32, nil
 }
 
 // ResolveUser resolves the user id of the process to a username
@@ -949,18 +960,19 @@ type Event struct {
 	Process   ProcessContext   `field:"process" event:"*"`
 	Container ContainerContext `field:"container"`
 
-	Chmod       ChmodEvent    `field:"chmod" event:"chmod"`
-	Chown       ChownEvent    `field:"chown" event:"chown"`
-	Open        OpenEvent     `field:"open" event:"open"`
-	Mkdir       MkdirEvent    `field:"mkdir" event:"mkdir"`
-	Rmdir       RmdirEvent    `field:"rmdir" event:"rmdir"`
-	Rename      RenameEvent   `field:"rename" event:"rename"`
-	Unlink      UnlinkEvent   `field:"unlink" event:"unlink"`
-	Utimes      UtimesEvent   `field:"utimes" event:"utimes"`
-	Link        LinkEvent     `field:"link" event:"link"`
-	SetXAttr    SetXAttrEvent `field:"setxattr" event:"setxattr"`
-	RemoveXAttr SetXAttrEvent `field:"removexattr" event:"removexattr"`
-	Exec        ExecEvent     `field:"exec" event:"exec"`
+	Chmod            ChmodEvent            `field:"chmod" event:"chmod"`
+	Chown            ChownEvent            `field:"chown" event:"chown"`
+	Open             OpenEvent             `field:"open" event:"open"`
+	Mkdir            MkdirEvent            `field:"mkdir" event:"mkdir"`
+	Rmdir            RmdirEvent            `field:"rmdir" event:"rmdir"`
+	Rename           RenameEvent           `field:"rename" event:"rename"`
+	Unlink           UnlinkEvent           `field:"unlink" event:"unlink"`
+	Utimes           UtimesEvent           `field:"utimes" event:"utimes"`
+	Link             LinkEvent             `field:"link" event:"link"`
+	SetXAttr         SetXAttrEvent         `field:"setxattr" event:"setxattr"`
+	RemoveXAttr      SetXAttrEvent         `field:"removexattr" event:"removexattr"`
+	Exec             ExecEvent             `field:"exec" event:"exec"`
+	GoroutineTracker GoroutineTrackerEvent `field:"-"`
 
 	Mount            MountEvent            `field:"-"`
 	Umount           UmountEvent           `field:"-"`

@@ -40,7 +40,7 @@ func (pc *ProcessCacheEntry) UnmarshalBinary(data []byte, resolvers *Resolvers, 
 	var read int
 
 	if unmarshalContext {
-		if len(data) < 200 {
+		if len(data) < 216 {
 			return 0, ErrNotEnoughData
 		}
 
@@ -50,7 +50,7 @@ func (pc *ProcessCacheEntry) UnmarshalBinary(data []byte, resolvers *Resolvers, 
 		}
 		read += offset
 	} else {
-		if len(data) < 136 {
+		if len(data) < 152 {
 			return 0, ErrNotEnoughData
 		}
 	}

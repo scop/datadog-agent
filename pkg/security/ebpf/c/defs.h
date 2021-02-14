@@ -198,6 +198,7 @@ enum event_type
     EVENT_EXEC,
     EVENT_EXIT,
     EVENT_INVALIDATE_DENTRY,
+    EVENT_GOROUTINE_TRACKER,
     EVENT_MAX, // has to be the last one and a power of two
 };
 
@@ -246,6 +247,8 @@ struct process_context_t {
     u32 tid;
     u32 uid;
     u32 gid;
+    u64 span_id;
+    u64 trace_id;
 };
 
 struct container_context_t {

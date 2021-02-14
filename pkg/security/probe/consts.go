@@ -65,6 +65,8 @@ const (
 	ExitEventType
 	// InvalidateDentryEventType - Dentry invalidated event
 	InvalidateDentryEventType
+	// GoroutineTrackerEventType - Goroutine tracker event
+	GoroutineTrackerEventType
 	// internalEventType - used internally to get the maximum number of event. Has to be the last one
 	maxEventType //nolint:deadcode,unused
 )
@@ -108,6 +110,8 @@ func (t EventType) String() string {
 		return "exit"
 	case InvalidateDentryEventType:
 		return "invalidate_dentry"
+	case GoroutineTrackerEventType:
+		return "goroutine_tracker"
 	}
 	return "unknown"
 }

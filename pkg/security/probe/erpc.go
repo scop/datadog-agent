@@ -8,11 +8,8 @@
 package probe
 
 import (
-	"os"
 	"syscall"
 	"unsafe"
-
-	"github.com/DataDog/ebpf/manager"
 )
 
 const (
@@ -31,20 +28,6 @@ type ERPC struct {
 type ERPCRequest struct {
 	OP   uint8
 	Data [ERPCMaxDataSize]byte
-}
-
-// GetConstants returns the ebpf constants
-func (k *ERPC) GetConstants() []manager.ConstantEditor {
-	return []manager.ConstantEditor{
-		{
-			Name:  "erpc_fd",
-			Value: uint64(k.fd),
-		},
-		{
-			Name:  "erpc_pid",
-			Value: uint64(os.Getpid()),
-		},
-	}
 }
 
 // Request generates an ioctl syscall with the required request

@@ -18,6 +18,8 @@ import (
 const (
 	DiscardInodeOp = 1
 	DiscardPidOp
+	SpanIDOp
+	GoroutineTrackerOp
 )
 
 func discardMarshalHeader(req *ERPCRequest, eventType EventType, timeout uint64) int {

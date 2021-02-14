@@ -170,6 +170,10 @@ func easyjsonA970e379DecodeGithubComDataDogDatadogAgentPkgSecurityProbe1(in *jle
 			out.UID = uint32(in.Uint32())
 		case "gid":
 			out.GID = uint32(in.Uint32())
+		case "span_id":
+			out.SpanID = string(in.String())
+		case "trace_id":
+			out.TraceID = string(in.String())
 		case "name":
 			out.Name = string(in.String())
 		case "executable_container_path":
@@ -290,6 +294,16 @@ func easyjsonA970e379EncodeGithubComDataDogDatadogAgentPkgSecurityProbe1(out *jw
 		out.RawString(prefix)
 		out.Uint32(uint32(in.GID))
 	}
+	if in.SpanID != "" {
+		const prefix string = ",\"span_id\":"
+		out.RawString(prefix)
+		out.String(string(in.SpanID))
+	}
+	if in.TraceID != "" {
+		const prefix string = ",\"trace_id\":"
+		out.RawString(prefix)
+		out.String(string(in.TraceID))
+	}
 	{
 		const prefix string = ",\"name\":"
 		out.RawString(prefix)
@@ -400,6 +414,10 @@ func easyjsonA970e379DecodeGithubComDataDogDatadogAgentPkgSecurityProbe2(in *jle
 			out.UID = uint32(in.Uint32())
 		case "gid":
 			out.GID = uint32(in.Uint32())
+		case "span_id":
+			out.SpanID = string(in.String())
+		case "trace_id":
+			out.TraceID = string(in.String())
 		case "name":
 			out.Name = string(in.String())
 		case "executable_container_path":
@@ -490,6 +508,16 @@ func easyjsonA970e379EncodeGithubComDataDogDatadogAgentPkgSecurityProbe2(out *jw
 		const prefix string = ",\"gid\":"
 		out.RawString(prefix)
 		out.Uint32(uint32(in.GID))
+	}
+	if in.SpanID != "" {
+		const prefix string = ",\"span_id\":"
+		out.RawString(prefix)
+		out.String(string(in.SpanID))
+	}
+	if in.TraceID != "" {
+		const prefix string = ",\"trace_id\":"
+		out.RawString(prefix)
+		out.String(string(in.TraceID))
 	}
 	{
 		const prefix string = ",\"name\":"
