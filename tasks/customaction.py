@@ -64,6 +64,7 @@ def build(ctx, vstudio_root=None, arch="x64", major_version='7', debug=False):
     ctx.run(cmd)
     artefacts = [
         "customaction.dll",
+        "customaction.pdb",
         "customaction-tests.exe"
     ]
     for artefact in artefacts:
