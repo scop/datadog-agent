@@ -46,3 +46,10 @@ func init() {
 	AgentCmd.PersistentFlags().BoolVarP(&flagNoColor, "no-color", "n", false, "disable color output")
 	AgentCmd.PersistentFlags().StringVarP(&sysProbeConfFilePath, "sysprobecfgpath", "", "", "path to directory containing system-probe.yaml")
 }
+
+func Run() {
+	// Invoke the Agent
+	if err := AgentCmd.Execute(); err != nil {
+		os.Exit(-1)
+	}
+}
