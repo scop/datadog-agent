@@ -14,11 +14,13 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	pb "github.com/DataDog/datadog-agent/cmd/agent/api/pb"
+	"github.com/DataDog/datadog-agent/cmd/agent/common"
 	"github.com/DataDog/datadog-agent/pkg/tagger"
 	"github.com/DataDog/datadog-agent/pkg/tagger/collectors"
 	"github.com/DataDog/datadog-agent/pkg/tagger/types"
@@ -48,6 +50,25 @@ func (s *server) GetHostname(ctx context.Context, in *pb.HostnameRequest) (*pb.H
 // see: https://godoc.org/github.com/grpc-ecosystem/go-grpc-middleware/auth#ServiceAuthFuncOverride
 func (s *server) AuthFuncOverride(ctx context.Context, fullMethodName string) (context.Context, error) {
 	return ctx, nil
+}
+
+func (s *serverSecure) DogstatsdCaptureTrigger(ctx context.Context, req *pb.CaptureTriggerRequest) (*pb.CaptureTriggerResponse, error) {
+	d, err := time.ParseDuration(req.GetDuration())
+	if err != nil {
+		return &pb.CaptureTriggerResponse{}, err
+	}
+
+	err = common.DSD.Capture(d)
+	if err != nil {
+		return &pb.CaptureTriggerResponse{}, err
+	}
+
+	p, err := common.DSD.TCapture.Path()
+	if err != nil {
+		return &pb.CaptureTriggerResponse{}, err
+	}
+
+	return &pb.CaptureTriggerResponse{Path: p}, nil
 }
 
 // StreamTags subscribes to added, removed, or changed entities in the Tagger
