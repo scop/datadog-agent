@@ -1,12 +1,12 @@
-#include "CustomActionDataTest.h"
 #include "stdafx.h"
+#include "CustomActionDataTest.h"
 
 // Case 2
 TEST_F(CustomActionDataTest, When_ServiceDoesNotExists_And_UserExists_WithPassword_ReturnsTrue)
 {
     CustomActionData customActionCtx;
-    customActionCtx.init(LR"(DDAGENTUSER_NAME=different_domain\\test;DDAGENTUSER_PASSWORD=1234;
-)");
+    EXPECT_TRUE(customActionCtx.init(LR"(DDAGENTUSER_NAME=different_domain\\test;DDAGENTUSER_PASSWORD=1234;)"));
+
     bool shouldResetPass;
 
     bool result =
@@ -43,7 +43,7 @@ TEST_F(CustomActionDataTest, When_ServiceDoesNotExists_And_UserExists_ButNoPassw
 TEST_F(CustomActionDataTest, When_ServiceExists_And_UserDoesNotExists_WithUserInDifferentDomain_ReturnsFalse)
 {
     CustomActionData customActionCtx;
-    customActionCtx.init(L"DDAGENTUSER_NAME=different_domain\\test");
+    EXPECT_TRUE(customActionCtx.init(L"DDAGENTUSER_NAME=different_domain\\test"));
 
     bool shouldResetPass;
 
@@ -57,8 +57,7 @@ TEST_F(CustomActionDataTest, When_ServiceExists_And_UserDoesNotExists_WithUserIn
 TEST_F(CustomActionDataTest, When_ServiceDoesNotExists_And_UserDoesNotExists_WithUserInDotLocalDomain_ReturnsTrue)
 {
     CustomActionData customActionCtx;
-    customActionCtx.init(LR"(DDAGENTUSER_NAME=TEST.LOCAL\username;DDAGENTUSER_PASSWORD=pass;
-)");
+    EXPECT_TRUE(customActionCtx.init(LR"(DDAGENTUSER_NAME=TEST.LOCAL\username;DDAGENTUSER_PASSWORD=pass;)"));
 
     bool shouldResetPass;
 

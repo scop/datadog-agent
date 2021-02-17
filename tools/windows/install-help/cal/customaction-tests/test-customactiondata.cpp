@@ -1,6 +1,6 @@
 // ReSharper disable StringLiteralTypo
-#include "CustomActionDataTest.h"
 #include "stdafx.h"
+#include "CustomActionDataTest.h"
 
 TEST_F(CustomActionDataTest, Handle_Username)
 {
