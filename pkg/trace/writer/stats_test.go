@@ -33,25 +33,27 @@ func TestStatsWriter(t *testing.T) {
 		sw, statsChannel, srv := testStatsWriter()
 		go sw.Run()
 
-		testSets := [][]*pb.ClientStatsPayload{
-			{{
-				Hostname: testHostname,
-				Env:      testEnv,
-				Stats: []pb.ClientStatsBucket{
-					testutil.RandomBucket(3),
-					testutil.RandomBucket(3),
-					testutil.RandomBucket(3),
-				},
-			}},
-			{{
-				Hostname: testHostname,
-				Env:      testEnv,
-				Stats: []pb.ClientStatsBucket{
-					testutil.RandomBucket(3),
-					testutil.RandomBucket(3),
-					testutil.RandomBucket(3),
-				},
-			}},
+		testSets := []pb.StatsPayload{
+			{
+				Stats: []pb.ClientStatsPayload{{
+					Hostname: testHostname,
+					Env:      testEnv,
+					Stats: []pb.ClientStatsBucket{
+						testutil.RandomBucket(3),
+						testutil.RandomBucket(3),
+						testutil.RandomBucket(3),
+					},
+				}}},
+			{
+				Stats: []pb.ClientStatsPayload{{
+					Hostname: testHostname,
+					Env:      testEnv,
+					Stats: []pb.ClientStatsBucket{
+						testutil.RandomBucket(3),
+						testutil.RandomBucket(3),
+						testutil.RandomBucket(3),
+					},
+				}}},
 		}
 
 		statsChannel <- testSets[0]
@@ -66,7 +68,7 @@ func TestStatsWriter(t *testing.T) {
 			"Dd-Api-Key":                   "123",
 		}
 		for i, p := range srv.Payloads() {
-			var statsPayload pb.ClientStatsPayload
+			var statsPayload pb.StatsPayload
 			r, err := gzip.NewReader(p.body)
 			assert.NoError(err)
 			err = msgp.Decode(r, &statsPayload)
@@ -74,7 +76,7 @@ func TestStatsWriter(t *testing.T) {
 			for k, v := range expectedHeaders {
 				assert.Equal(v, p.headers[k])
 			}
-			assert.Equal(*testSets[i][0], statsPayload)
+			assert.Equal(testSets[i], statsPayload)
 		}
 	})
 
@@ -85,13 +87,15 @@ func TestStatsWriter(t *testing.T) {
 			// This gives us a total of 45 entries. 3 per span, 5
 			// spans per stat bucket. Each buckets have the same
 			// time window (start: 0, duration 1e9).
-			stats := &pb.ClientStatsPayload{
-				Hostname: testHostname,
-				Env:      testEnv,
-				Stats: []pb.ClientStatsBucket{
-					testutil.RandomBucket(5),
-					testutil.RandomBucket(5),
-					testutil.RandomBucket(5),
+			stats := pb.StatsPayload{
+				Stats: []pb.ClientStatsPayload{{
+					Hostname: testHostname,
+					Env:      testEnv,
+					Stats: []pb.ClientStatsBucket{
+						testutil.RandomBucket(5),
+						testutil.RandomBucket(5),
+						testutil.RandomBucket(5),
+					}},
 				},
 			}
 			expectedNbEntries := 15
@@ -102,16 +106,15 @@ func TestStatsWriter(t *testing.T) {
 				expectedNbEntriesByPayload[i%expectedNbPayloads]++
 			}
 
-			payloads, nbStatBuckets, nbEntries := sw.buildPayloads(stats, 12)
+			payloads := sw.buildPayloads(stats, 12)
 
 			assert.Equal(expectedNbPayloads, len(payloads))
-			assert.Equal(expectedNbPayloads, nbStatBuckets)
-			assert.Equal(expectedNbEntries, nbEntries)
 			for i := 0; i < expectedNbPayloads; i++ {
 				assert.Equal(1, len(payloads[i].Stats))
-				assert.Equal(expectedNbEntriesByPayload[i], len(payloads[i].Stats[0].Stats))
+				assert.Equal(1, len(payloads[i].Stats[0].Stats))
+				assert.Equal(expectedNbEntriesByPayload[i], len(payloads[i].Stats[0].Stats[0].Stats))
 			}
-			assert.Equal(extractCounts([]*pb.ClientStatsPayload{stats}), extractCounts(payloads))
+			assert.Equal(extractCounts([]pb.StatsPayload{stats}), extractCounts(payloads))
 		})
 
 		t.Run("no-split", func(t *testing.T) {
@@ -122,7 +125,7 @@ func TestStatsWriter(t *testing.T) {
 			// This gives us a tota of 45 entries. 3 per span, 5 spans per
 			// stat bucket. Each buckets have the same time window (start:
 			// 0, duration 1e9).
-			stats := &pb.ClientStatsPayload{
+			stats := pb.ClientStatsPayload{
 				Hostname: testHostname,
 				Env:      testEnv,
 				Stats: []pb.ClientStatsBucket{
@@ -132,25 +135,22 @@ func TestStatsWriter(t *testing.T) {
 				},
 			}
 
-			payloads, nbStatBuckets, nbEntries := sw.buildPayloads(stats, 1337)
-
+			payloads := sw.buildPayloads(pb.StatsPayload{Stats: []pb.ClientStatsPayload{stats}}, 1337)
 			assert.Equal(1, len(payloads))
-			assert.Equal(3, nbStatBuckets)
-			assert.Equal(15, nbEntries)
-
-			assert.Equal(3, len(payloads[0].Stats))
-			assert.Equal(5, len(payloads[0].Stats[0].Stats))
-			assert.Equal(5, len(payloads[0].Stats[1].Stats))
-			assert.Equal(5, len(payloads[0].Stats[2].Stats))
+			s := payloads[0].Stats
+			assert.Equal(3, len(s[0].Stats))
+			assert.Equal(5, len(s[0].Stats[0].Stats))
+			assert.Equal(5, len(s[0].Stats[1].Stats))
+			assert.Equal(5, len(s[0].Stats[2].Stats))
 		})
 	})
 }
 
-func testStatsWriter() (*StatsWriter, chan []*pb.ClientStatsPayload, *testServer) {
+func testStatsWriter() (*StatsWriter, chan pb.StatsPayload, *testServer) {
 	srv := newTestServer()
 	// We use a blocking channel to make sure that sends get received on the
 	// other end.
-	in := make(chan []*pb.ClientStatsPayload)
+	in := make(chan pb.StatsPayload)
 	cfg := &config.AgentConfig{
 		Endpoints:   []*config.Endpoint{{Host: srv.URL, APIKey: "123"}},
 		StatsWriter: &config.WriterConfig{ConnectionLimit: 20, QueueSize: 20},
@@ -184,16 +184,18 @@ func getKey(b pb.ClientGroupedStats, start, duration uint64) key {
 	}
 }
 
-func extractCounts(stats []*pb.ClientStatsPayload) map[key]counts {
+func extractCounts(stats []pb.StatsPayload) map[key]counts {
 	counts := make(map[key]counts)
-	for _, p := range stats {
-		for _, b := range p.Stats {
-			for _, g := range b.Stats {
-				k := getKey(g, b.Start, b.Duration)
-				c := counts[k]
-				c.duration += g.Duration
-				c.hits += g.Hits
-				c.errors += g.Errors
+	for _, s := range stats {
+		for _, p := range s.Stats {
+			for _, b := range p.Stats {
+				for _, g := range b.Stats {
+					k := getKey(g, b.Start, b.Duration)
+					c := counts[k]
+					c.duration += g.Duration
+					c.hits += g.Hits
+					c.errors += g.Errors
+				}
 			}
 		}
 	}

@@ -65,7 +65,7 @@ type Agent struct {
 func NewAgent(ctx context.Context, conf *config.AgentConfig) *Agent {
 	dynConf := sampler.NewDynamicConfig(conf.DefaultEnv)
 	in := make(chan *api.Payload, 1000)
-	statsChan := make(chan []*pb.ClientStatsPayload, 100)
+	statsChan := make(chan pb.StatsPayload, 100)
 
 	agnt := &Agent{
 		Concentrator:      stats.NewConcentrator(conf.BucketInterval.Nanoseconds(), statsChan, time.Now(), conf.DefaultEnv, conf.Hostname),
@@ -277,7 +277,7 @@ func (a *Agent) ProcessStats(in pb.ClientStatsPayload, lang string) {
 			a.Replacer.ReplaceStatsGroup(&b)
 		}
 	}
-	a.StatsWriter.SendPayload(&in)
+	a.StatsWriter.SendPayload(pb.StatsPayload{Stats: []pb.ClientStatsPayload{in}})
 }
 
 // sample decides whether the trace will be kept and extracts any APM events

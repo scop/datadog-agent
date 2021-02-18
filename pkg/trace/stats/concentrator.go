@@ -34,9 +34,9 @@ type Concentrator struct {
 	// This only applies to past buckets. Stats buckets in the future are allowed with no restriction.
 	bufferLen int
 	In        chan []Input
-	Out       chan []*pb.ClientStatsPayload
+	Out       chan pb.StatsPayload
 	exit      chan struct{}
-	exitWG    *sync.WaitGroup
+	exitWG    sync.WaitGroup
 	buckets   map[int64]*RawBucket // buckets used to aggregate stats per timestamp
 	mu        sync.Mutex
 	env       string
@@ -44,7 +44,7 @@ type Concentrator struct {
 }
 
 // NewConcentrator initializes a new concentrator ready to be started
-func NewConcentrator(bsize int64, out chan []*pb.ClientStatsPayload, now time.Time, env, hostname string) *Concentrator {
+func NewConcentrator(bsize int64, out chan pb.StatsPayload, now time.Time, env, hostname string) *Concentrator {
 	c := Concentrator{
 		bsize:   bsize,
 		buckets: make(map[int64]*RawBucket),
@@ -56,7 +56,6 @@ func NewConcentrator(bsize int64, out chan []*pb.ClientStatsPayload, now time.Ti
 		In:        make(chan []Input, 100),
 		Out:       out,
 		exit:      make(chan struct{}),
-		exitWG:    &sync.WaitGroup{},
 		env:       env,
 		hostname:  hostname,
 	}
@@ -153,11 +152,11 @@ func (c *Concentrator) addNow(i *Input) {
 }
 
 // Flush deletes and returns complete statistic buckets
-func (c *Concentrator) Flush() []*pb.ClientStatsPayload {
+func (c *Concentrator) Flush() pb.StatsPayload {
 	return c.flushNow(time.Now().UnixNano())
 }
 
-func (c *Concentrator) flushNow(now int64) []*pb.ClientStatsPayload {
+func (c *Concentrator) flushNow(now int64) pb.StatsPayload {
 	m := make(map[PayloadKey][]pb.ClientStatsBucket)
 
 	c.mu.Lock()
@@ -182,16 +181,16 @@ func (c *Concentrator) flushNow(now int64) []*pb.ClientStatsPayload {
 		c.oldestTs = newOldestTs
 	}
 	c.mu.Unlock()
-	sb := make([]*pb.ClientStatsPayload, 0, len(m))
+	sb := make([]pb.ClientStatsPayload, 0, len(m))
 	for k, s := range m {
-		sb = append(sb, &pb.ClientStatsPayload{
+		sb = append(sb, pb.ClientStatsPayload{
 			Env:      k.env,
 			Hostname: k.hostname,
 			Version:  k.version,
 			Stats:    s,
 		})
 	}
-	return sb
+	return pb.StatsPayload{Stats: sb}
 }
 
 // alignTs returns the provided timestamp truncated to the bucket size.

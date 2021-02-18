@@ -40,7 +40,7 @@ const (
 
 // StatsWriter ingests stats buckets and flushes them to the API.
 type StatsWriter struct {
-	in      <-chan []*pb.ClientStatsPayload
+	in      <-chan pb.StatsPayload
 	senders []*sender
 	stop    chan struct{}
 	stats   *info.StatsWriterInfo
@@ -49,7 +49,7 @@ type StatsWriter struct {
 }
 
 // NewStatsWriter returns a new StatsWriter. It must be started using Run.
-func NewStatsWriter(cfg *config.AgentConfig, in <-chan []*pb.ClientStatsPayload) *StatsWriter {
+func NewStatsWriter(cfg *config.AgentConfig, in <-chan pb.StatsPayload) *StatsWriter {
 	sw := &StatsWriter{
 		in:      in,
 		stats:   &info.StatsWriterInfo{},
@@ -102,26 +102,15 @@ func (w *StatsWriter) Stop() {
 	stopSenders(w.senders)
 }
 
-func (w *StatsWriter) addStats(sp []*pb.ClientStatsPayload) {
+func (w *StatsWriter) addStats(sp pb.StatsPayload) {
 	defer timing.Since("datadog.trace_agent.stats_writer.encode_ms", time.Now())
-	for _, p := range sp {
-		payloads, bucketCount, entryCount := w.buildPayloads(p, maxEntriesPerPayload)
-		switch n := len(payloads); {
-		case n == 0:
-			return
-		case n > 1:
-			atomic.AddInt64(&w.stats.Splits, 1)
-		}
-		atomic.AddInt64(&w.stats.StatsBuckets, int64(bucketCount))
-		log.Debugf("Flushing %d entries (buckets=%d payloads=%v)", entryCount, bucketCount, len(payloads))
-		for _, p := range payloads {
-			w.SendPayload(p)
-		}
+	for _, p := range w.buildPayloads(sp, maxEntriesPerPayload) {
+		w.SendPayload(p)
 	}
 }
 
 // SendPayload sends a stats payload to the Datadog backend.
-func (w *StatsWriter) SendPayload(p *pb.ClientStatsPayload) {
+func (w *StatsWriter) SendPayload(p pb.StatsPayload) {
 	req := newPayload(map[string]string{
 		headerLanguages:    strings.Join(info.Languages(), "|"),
 		"Content-Type":     "application/msgpack",
@@ -136,7 +125,7 @@ func (w *StatsWriter) SendPayload(p *pb.ClientStatsPayload) {
 }
 
 // encodePayload encodes the payload as Gzipped msgPack into w.
-func encodePayload(w io.Writer, payload *pb.ClientStatsPayload) error {
+func encodePayload(w io.Writer, payload pb.StatsPayload) error {
 	gz, err := gzip.NewWriterLevel(w, gzip.BestSpeed)
 	if err != nil {
 		return err
@@ -146,26 +135,61 @@ func encodePayload(w io.Writer, payload *pb.ClientStatsPayload) error {
 			log.Errorf("Error closing gzip stream when writing stats payload: %v", err)
 		}
 	}()
-	return msgp.Encode(gz, payload)
+	return msgp.Encode(gz, &payload)
 }
 
-// buildPayloads returns a set of payload to send out, each payloads guaranteed
-// to have the number of stats buckets under the given maximum.
-func (w *StatsWriter) buildPayloads(p *pb.ClientStatsPayload, maxEntriesPerPayloads int) ([]*pb.ClientStatsPayload, int, int) {
+type clientStatsPayload struct {
+	pb.ClientStatsPayload
+	nbEntries int
+}
+
+// buildPayloads splits pb.ClientStatsPayload that have more than maxEntriesPerPayload
+// and groups them into pb.StatsPayload with less than maxEntriesPerPayload
+func (w *StatsWriter) buildPayloads(sp pb.StatsPayload, maxEntriesPerPayload int) []pb.StatsPayload {
+	grouped := make([]pb.StatsPayload, 0, len(sp.Stats))
+	i := -1
+	nbEntries := 0
+	nbBuckets := 0
+	nbPayloads := 0
+	for _, p := range sp.Stats {
+		for _, s := range w.splitPayload(p, maxEntriesPerPayload) {
+			if i == -1 || nbEntries+s.nbEntries > maxEntriesPerPayload {
+				if i != -1 {
+					log.Debugf("Flushing %d entries (buckets=%d payloads=%v)", nbEntries, nbBuckets, nbPayloads)
+					atomic.AddInt64(&w.stats.StatsBuckets, int64(nbBuckets))
+				}
+				grouped = append(grouped, pb.StatsPayload{})
+				i++
+				nbEntries = 0
+				nbBuckets = 0
+				nbPayloads = 0
+			}
+			nbEntries += s.nbEntries
+			nbBuckets += len(s.Stats)
+			nbPayloads += 1
+			grouped[i].Stats = append(grouped[i].Stats, s.ClientStatsPayload)
+		}
+	}
+	return grouped
+}
+
+// splitPayload splits a stats payload to ensure that each stats payload has less than maxEntriesPerPayload entries.
+func (w *StatsWriter) splitPayload(p pb.ClientStatsPayload, maxEntriesPerPayload int) []clientStatsPayload {
 	if len(p.Stats) == 0 {
-		return nil, 0, 0
+		return nil
 	}
 	// 1. Get how many payloads we need, based on the total number of entries.
 	nbEntries := 0
 	for _, b := range p.Stats {
 		nbEntries += len(b.Stats)
 	}
-	if maxEntriesPerPayloads <= 0 || nbEntries < maxEntriesPerPayloads {
+	if maxEntriesPerPayload <= 0 || nbEntries < maxEntriesPerPayload {
 		// nothing to do, break early
-		return []*pb.ClientStatsPayload{p}, len(p.Stats), nbEntries
+		return []clientStatsPayload{{ClientStatsPayload: p, nbEntries: nbEntries}}
 	}
-	nbPayloads := nbEntries / maxEntriesPerPayloads
-	if nbEntries%maxEntriesPerPayloads != 0 {
+	atomic.AddInt64(&w.stats.Splits, 1)
+	nbPayloads := nbEntries / maxEntriesPerPayload
+	if nbEntries%maxEntriesPerPayload != 0 {
 		nbPayloads++
 	}
 
@@ -173,21 +197,22 @@ func (w *StatsWriter) buildPayloads(p *pb.ClientStatsPayload, maxEntriesPerPaylo
 	//    duration) to a stats payload.
 	type timeWindow struct{ start, duration uint64 }
 	indexes := make([]map[timeWindow]int, nbPayloads)
-	payloads := make([]*pb.ClientStatsPayload, nbPayloads)
+	payloads := make([]clientStatsPayload, nbPayloads)
 	for i := 0; i < nbPayloads; i++ {
 		indexes[i] = make(map[timeWindow]int, nbPayloads)
-		payloads[i] = &pb.ClientStatsPayload{
-			Hostname: p.Hostname,
-			Env:      p.Env,
-			Version:  p.Version,
-			Stats:    make([]pb.ClientStatsBucket, 0, maxEntriesPerPayload),
+		payloads[i] = clientStatsPayload{
+			ClientStatsPayload: pb.ClientStatsPayload{
+				Hostname: p.Hostname,
+				Env:      p.Env,
+				Version:  p.Version,
+				Stats:    make([]pb.ClientStatsBucket, 0, maxEntriesPerPayload),
+			},
 		}
 	}
 	// 3. Iterate over all entries of each stats. Add the entry to one of
 	//    the payloads, in a round robin fashion. Use the indexes maps to
 	//    ensure that we have one ClientStatsBucket per timeWindow for each ClientStatsPayoad.
 	i := 0
-	nbStats := 0
 	for _, b := range p.Stats {
 		tw := timeWindow{b.Start, b.Duration}
 		for _, g := range b.Stats {
@@ -195,17 +220,17 @@ func (w *StatsWriter) buildPayloads(p *pb.ClientStatsPayload, maxEntriesPerPaylo
 			indexMap := indexes[j]
 			bi, ok := indexMap[tw]
 			if !ok {
-				nbStats++
 				bi = len(payloads[j].Stats)
 				indexMap[tw] = bi
 				payloads[j].Stats = append(payloads[j].Stats, pb.ClientStatsBucket{Start: tw.start, Duration: tw.duration})
 			}
 			// here, we can just append the group, because there is no duplicate groups in the original stats payloads sent to the writer.
 			payloads[j].Stats[bi].Stats = append(payloads[j].Stats[bi].Stats, g)
+			payloads[j].nbEntries++
 			i++
 		}
 	}
-	return payloads, nbStats, nbEntries
+	return payloads
 }
 
 var _ eventRecorder = (*StatsWriter)(nil)

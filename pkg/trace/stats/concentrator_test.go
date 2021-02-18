@@ -25,7 +25,7 @@ var (
 )
 
 func NewTestConcentrator(now time.Time) *Concentrator {
-	statsChan := make(chan []*pb.ClientStatsPayload)
+	statsChan := make(chan pb.StatsPayload)
 	return NewConcentrator(testBucketInterval, statsChan, now, "env", "hostname")
 }
 
@@ -102,7 +102,7 @@ func TestConcentratorOldestTs(t *testing.T) {
 
 		for i := 0; i < c.bufferLen; i++ {
 			stats := c.flushNow(flushTime)
-			if !assert.Equal(0, len(stats), "We should get exactly 0 Bucket") {
+			if !assert.Equal(0, len(stats.Stats), "We should get exactly 0 Bucket") {
 				t.FailNow()
 			}
 			flushTime += testBucketInterval
@@ -110,7 +110,7 @@ func TestConcentratorOldestTs(t *testing.T) {
 
 		stats := c.flushNow(flushTime)
 
-		if !assert.Equal(1, len(stats), "We should get exactly 1 Bucket") {
+		if !assert.Equal(1, len(stats.Stats), "We should get exactly 1 Bucket") {
 			t.FailNow()
 		}
 
@@ -127,7 +127,7 @@ func TestConcentratorOldestTs(t *testing.T) {
 				Errors:   0,
 			},
 		}
-		assertCountsEqual(t, expected, stats[0].Stats[0].Stats)
+		assertCountsEqual(t, expected, stats.Stats[0].Stats[0].Stats)
 	})
 
 	t.Run("hot", func(t *testing.T) {
@@ -138,14 +138,14 @@ func TestConcentratorOldestTs(t *testing.T) {
 
 		for i := 0; i < c.bufferLen-1; i++ {
 			stats := c.flushNow(flushTime)
-			if !assert.Equal(0, len(stats), "We should get exactly 0 Bucket") {
+			if !assert.Equal(0, len(stats.Stats), "We should get exactly 0 Bucket") {
 				t.FailNow()
 			}
 			flushTime += testBucketInterval
 		}
 
 		stats := c.flushNow(flushTime)
-		if !assert.Equal(1, len(stats), "We should get exactly 1 Bucket") {
+		if !assert.Equal(1, len(stats.Stats), "We should get exactly 1 Bucket") {
 			t.FailNow()
 		}
 		flushTime += testBucketInterval
@@ -163,10 +163,10 @@ func TestConcentratorOldestTs(t *testing.T) {
 				Errors:   0,
 			},
 		}
-		assertCountsEqual(t, expected, stats[0].Stats[0].Stats)
+		assertCountsEqual(t, expected, stats.Stats[0].Stats[0].Stats)
 
 		stats = c.flushNow(flushTime)
-		if !assert.Equal(1, len(stats), "We should get exactly 1 Bucket") {
+		if !assert.Equal(1, len(stats.Stats), "We should get exactly 1 Bucket") {
 			t.FailNow()
 		}
 
@@ -182,7 +182,7 @@ func TestConcentratorOldestTs(t *testing.T) {
 				Errors:   0,
 			},
 		}
-		assertCountsEqual(t, expected, stats[0].Stats[0].Stats)
+		assertCountsEqual(t, expected, stats.Stats[0].Stats[0].Stats)
 	})
 }
 
@@ -226,11 +226,11 @@ func TestConcentratorStatsTotals(t *testing.T) {
 		for i := 0; i <= c.bufferLen; i++ {
 			stats := c.flushNow(flushTime)
 
-			if len(stats) == 0 {
+			if len(stats.Stats) == 0 {
 				continue
 			}
 
-			for _, b := range stats[0].Stats[0].Stats {
+			for _, b := range stats.Stats[0].Stats[0].Stats {
 				duration += b.Duration
 				hits += b.Hits
 				errors += b.Errors
@@ -390,16 +390,16 @@ func TestConcentratorStatsCounts(t *testing.T) {
 				// That's a flush for which we expect no data
 				return
 			}
-			if !assert.Equal(1, len(stats), "We should get exactly 1 Bucket") {
+			if !assert.Equal(1, len(stats.Stats), "We should get exactly 1 Bucket") {
 				t.FailNow()
 			}
-			assert.Equal(uint64(expectedFlushedTs), stats[0].Stats[0].Start)
+			assert.Equal(uint64(expectedFlushedTs), stats.Stats[0].Stats[0].Start)
 			expectedCountValByKey := expectedCountValByKeyByTime[expectedFlushedTs]
-			assertCountsEqual(t, expectedCountValByKey, stats[0].Stats[0].Stats)
+			assertCountsEqual(t, expectedCountValByKey, stats.Stats[0].Stats[0].Stats)
 
 			// Flushing again at the same time should return nothing
 			stats = c.flushNow(flushTime)
-			if !assert.Equal(0, len(stats), "Second flush of the same time should be empty") {
+			if !assert.Equal(0, len(stats.Stats), "Second flush of the same time should be empty") {
 				t.FailNow()
 			}
 
@@ -425,11 +425,11 @@ func generateDistribution(t *testing.T, generator func(i int) int64) *ddsketch.D
 	c.addNow(&Input{Env: "none", Trace: NewWeightedTrace(trace, traceutil.GetRoot(trace))})
 	stats := c.flushNow(now.UnixNano() + c.bsize*int64(c.bufferLen))
 	expectedFlushedTs := alignedNow
-	assert.Len(stats, 1)
-	assert.Len(stats[0].Stats, 1)
-	assert.Equal(uint64(expectedFlushedTs), stats[0].Stats[0].Start)
-	assert.Len(stats[0].Stats, 1)
-	b := stats[0].Stats[0].Stats[0].OkSummary
+	assert.Len(stats.Stats, 1)
+	assert.Len(stats.Stats[0].Stats, 1)
+	assert.Equal(uint64(expectedFlushedTs), stats.Stats[0].Stats[0].Start)
+	assert.Len(stats.Stats[0].Stats, 1)
+	b := stats.Stats[0].Stats[0].Stats[0].OkSummary
 	var msg sketchpb.DDSketch
 	err := proto.Unmarshal(b, &msg)
 	assert.Nil(err)
