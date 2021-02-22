@@ -212,6 +212,7 @@ type ExecEvent struct {
 	ArgsID        uint32    `field:"-"`
 	ArgsTruncated bool      `field:"-"`
 	ArgsRaw       [128]byte `field:"-"`
+	ArgsOverflow  bool      `field:"-"`
 }
 
 // GetPathResolutionError returns the path resolution error as a string if there is one

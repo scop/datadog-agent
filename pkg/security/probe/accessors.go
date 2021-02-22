@@ -235,7 +235,6 @@ func (m *Model) GetEvaluator(field eval.Field, regID eval.RegisterID) (eval.Eval
 	case "exec.args":
 		return &eval.StringEvaluator{
 			EvalFnc: func(ctx *eval.Context) string {
-
 				var result string
 
 				reg := ctx.Registers[regID]

@@ -221,7 +221,7 @@ func isParentPathDiscarder(rs *rules.RuleSet, regexCache *simplelru.LRU, eventTy
 
 	basenameField := strings.Replace(filenameField, ".filename", ".basename", 1)
 
-	event := NewEvent(nil)
+	event := NewEvent(nil, nil)
 	if _, err := event.GetFieldType(filenameField); err != nil {
 		return false, nil
 	}

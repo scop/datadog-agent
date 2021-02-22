@@ -195,6 +195,16 @@ func newProcessCacheEntrySerializer(pce *model.ProcessCacheEntry, e *Event, r *R
 		args = pce.Args
 	}
 
+	// scrub args, do not send args if no scrubber instance is passed
+	// can be the case for some custom event
+	if e.scrubber == nil {
+		args = []string{}
+	} else {
+		if newArgs, changed := e.scrubber.ScrubCommand(args); changed {
+			args = newArgs
+		}
+	}
+
 	return &ProcessCacheEntrySerializer{
 		Pid:                 pid,
 		PPid:                ppid,
@@ -231,7 +241,7 @@ func newProcessContextSerializer(entry *model.ProcessCacheEntry, e *Event, r *Re
 
 	if e == nil {
 		// custom events call newProcessContextSerializer with an empty Event
-		e = NewEvent(r)
+		e = NewEvent(r, nil)
 		e.Process = model.ProcessContext{
 			Ancestor: entry,
 		}

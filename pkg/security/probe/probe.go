@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/DataDog/datadog-agent/pkg/ebpf/bytecode"
+	pconfig "github.com/DataDog/datadog-agent/pkg/process/config"
 	"github.com/DataDog/datadog-agent/pkg/security/config"
 	"github.com/DataDog/datadog-agent/pkg/security/ebpf"
 	"github.com/DataDog/datadog-agent/pkg/security/ebpf/probes"
@@ -59,6 +60,7 @@ type Probe struct {
 	event     *Event
 	perfMap   *manager.PerfMap
 	reOrderer *ReOrderer
+	scrubber  *pconfig.DataScrubber
 
 	// Approvers / discarders section
 	pidDiscarders      *pidDiscarders
@@ -693,7 +695,7 @@ func (p *Probe) GetDebugStats() map[string]interface{} {
 // NewRuleSet returns a new rule set
 func (p *Probe) NewRuleSet(opts *rules.Opts) *rules.RuleSet {
 	eventCtor := func() eval.Event {
-		return NewEvent(p.resolvers)
+		return NewEvent(p.resolvers, p.scrubber)
 	}
 	opts.Logger = seclog.DatadogAgentLogger{}
 
@@ -747,9 +749,7 @@ func NewProbe(config *config.Config, client *statsd.Client) (*Probe, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	p.resolvers = resolvers
-	p.event = NewEvent(p.resolvers)
 
 	p.reOrderer = NewReOrderer(p.handleEvent,
 		ExtractEventInfo,
@@ -760,6 +760,11 @@ func NewProbe(config *config.Config, client *statsd.Client) (*Probe, error) {
 			MetricRate: 5 * time.Second,
 		})
 
+	p.scrubber = pconfig.NewDefaultDataScrubber()
+	p.event = NewEvent(p.resolvers, p.scrubber)
+
 	eventZero.resolvers = p.resolvers
+	eventZero.scrubber = p.scrubber
+
 	return p, nil
 }
