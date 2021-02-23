@@ -124,8 +124,15 @@ func (e *ExecEvent) UnmarshalBinary(data []byte) (int, error) {
 	e.ArgsTruncated = ByteOrder.Uint32(data[read+4:read+8]) == 1
 	SliceToArray(data[read+8:read+136], unsafe.Pointer(&e.ArgsRaw))
 	e.UnmarshalArgs()
+	read += 72
 
-	return read + 136, nil
+	e.EnvsID = ByteOrder.Uint32(data[read : read+4])
+	e.EnvsTruncated = ByteOrder.Uint32(data[read+4:read+8]) == 1
+	SliceToArray(data[read+8:read+72], unsafe.Pointer(&e.EnvsRaw))
+	e.UnmarshalEnvs()
+	read += 72
+
+	return read, nil
 }
 
 // UnmarshalArgs resolves exec arguments
@@ -133,8 +140,22 @@ func (e *ExecEvent) UnmarshalArgs() {
 	args, err := UnmarshalStringArray(e.ArgsRaw[:])
 	if err != nil {
 		e.ArgsOverflow = true
-	} else {
+	}
+
+	if args != nil {
 		e.Args = args
+	}
+}
+
+// UnmarshalEnvs resolves exec arguments
+func (e *ExecEvent) UnmarshalEnvs() {
+	envs, err := UnmarshalStringArray(e.EnvsRaw[:])
+	if err != nil {
+		e.EnvsOverflow = true
+	}
+
+	if envs != nil {
+		e.Envs = envs
 	}
 }
 

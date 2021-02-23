@@ -10,6 +10,7 @@
 package probe
 
 import (
+	"strings"
 	"syscall"
 	"time"
 
@@ -72,6 +73,7 @@ type ProcessCacheEntrySerializer struct {
 	ExecTime            *time.Time `json:"exec_time,omitempty"`
 	ExitTime            *time.Time `json:"exit_time,omitempty"`
 	Args                []string   `json:"args,omitempty"`
+	Envs                []string   `json:"envs,omitempty"`
 }
 
 // ContainerContextSerializer serializes a container context to JSON
@@ -173,7 +175,7 @@ func getTimeIfNotZero(t time.Time) *time.Time {
 func newProcessCacheEntrySerializer(pce *model.ProcessCacheEntry, e *Event, r *Resolvers, useEvent bool) *ProcessCacheEntrySerializer {
 	var pid, ppid, tid, uid, gid uint32
 	var user, group string
-	var args []string
+	var args, envs []string
 
 	if useEvent {
 		pid = e.Process.Pid
@@ -184,6 +186,7 @@ func newProcessCacheEntrySerializer(pce *model.ProcessCacheEntry, e *Event, r *R
 		user = e.ResolveProcessUser(&e.Process)
 		group = e.ResolveProcessGroup(&e.Process)
 		args = e.Process.Args
+		envs = e.Process.Envs
 	} else {
 		pid = pce.Pid
 		ppid = pce.PPid
@@ -193,16 +196,27 @@ func newProcessCacheEntrySerializer(pce *model.ProcessCacheEntry, e *Event, r *R
 		user = e.ResolveExecUser(&pce.ProcessContext.ExecEvent)
 		group = e.ResolveExecGroup(&pce.ProcessContext.ExecEvent)
 		args = pce.Args
+		envs = pce.Envs
 	}
 
 	// scrub args, do not send args if no scrubber instance is passed
 	// can be the case for some custom event
 	if e.scrubber == nil {
 		args = []string{}
+		envs = []string{}
 	} else {
 		if newArgs, changed := e.scrubber.ScrubCommand(args); changed {
 			args = newArgs
 		}
+
+		// for envs, we just keep the keys
+		var newEnvs []string
+		for _, env := range envs {
+			if els := strings.SplitN(env, "=", 2); len(els) > 0 {
+				newEnvs = append(newEnvs, els[0])
+			}
+		}
+		envs = newEnvs
 	}
 
 	return &ProcessCacheEntrySerializer{
@@ -225,6 +239,7 @@ func newProcessCacheEntrySerializer(pce *model.ProcessCacheEntry, e *Event, r *R
 		ExecTime:            getTimeIfNotZero(pce.ExecTime),
 		ExitTime:            getTimeIfNotZero(pce.ExitTime),
 		Args:                args,
+		Envs:                envs,
 	}
 }
 

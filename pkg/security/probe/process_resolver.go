@@ -66,15 +66,15 @@ type ProcessResolverOpts struct {
 // ProcessResolver resolved process context
 type ProcessResolver struct {
 	sync.RWMutex
-	probe        *Probe
-	resolvers    *Resolvers
-	client       *statsd.Client
-	inodeInfoMap *lib.Map
-	procCacheMap *lib.Map
-	pidCacheMap  *lib.Map
-	argsCacheMap *lib.Map
-	cacheSize    int64
-	opts         ProcessResolverOpts
+	probe            *Probe
+	resolvers        *Resolvers
+	client           *statsd.Client
+	inodeInfoMap     *lib.Map
+	procCacheMap     *lib.Map
+	pidCacheMap      *lib.Map
+	argsEnvsCacheMap *lib.Map
+	cacheSize        int64
+	opts             ProcessResolverOpts
 
 	entryCache map[uint32]*model.ProcessCacheEntry
 }
@@ -366,22 +366,39 @@ func (p *ProcessResolver) resolveWithProcfs(pid uint32) *model.ProcessCacheEntry
 }
 
 func (p *ProcessResolver) resolveExecArgs(pce *model.ProcessCacheEntry) {
-	// already fully resolved
-	if !pce.ArgsOverflow {
-		return
+	getStrArray := func(id uint32) []string {
+		entryb, err := p.argsEnvsCacheMap.LookupBytes(id)
+		if err != nil || entryb == nil {
+			return nil
+		}
+
+		array, err := model.UnmarshalStringArray(entryb)
+		if err != nil {
+			return nil
+		}
+
+		return array
 	}
 
-	entryb, err := p.argsCacheMap.LookupBytes(pce.ArgsID)
-	if err != nil || entryb == nil {
-		return
+	if pce.ArgsOverflow {
+		if args := getStrArray(pce.ArgsID); args != nil {
+			pce.Args = args
+		}
+
+		if pce.ArgsTruncated {
+			pce.Args = append(pce.Args, "...")
+		}
 	}
 
-	args, err := model.UnmarshalStringArray(entryb)
-	if err != nil {
-		return
-	}
+	if pce.EnvsOverflow {
+		if envs := getStrArray(pce.EnvsID); envs != nil {
+			pce.Envs = envs
+		}
 
-	pce.Args = append(args, "...")
+		if pce.EnvsTruncated {
+			pce.Envs = append(pce.Envs, "...")
+		}
+	}
 }
 
 // Get returns the cache entry for a specified pid
@@ -406,7 +423,7 @@ func (p *ProcessResolver) Start(ctx context.Context) error {
 		return err
 	}
 
-	if p.argsCacheMap, err = p.probe.Map("args_cache"); err != nil {
+	if p.argsEnvsCacheMap, err = p.probe.Map("args_envs_cache"); err != nil {
 		return err
 	}
 

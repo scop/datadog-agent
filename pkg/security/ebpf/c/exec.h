@@ -7,35 +7,38 @@
 #include "syscalls.h"
 #include "container.h"
 
-#define MAX_ARGS_PERF_LEN 128
-#define MAX_ARGS_LEN (1 << 15)
-#define MAX_ARGS 32
-#define MAX_ARG_SIZE 4096
+#define MAX_PERF_STR_BUFF_LEN 64
+#define MAX_STR_BUFF_LEN (1 << 15)
+#define MAX_ARRAY_ELEMENT 64
+#define MAX_ARRAY_ELEMENT_SIZE 4096
 
-struct first_args_value_t {
+struct perf_str_buffer_t {
     u32 id;
     u32 truncated;
-    char args[MAX_ARGS_PERF_LEN];
+    char value[MAX_PERF_STR_BUFF_LEN];
 };
 
-struct args_value_t {
-    char args[MAX_ARGS_LEN];
+struct str_buffer_t {
+    char value[MAX_STR_BUFF_LEN];
 };
 
-struct bpf_map_def SEC("maps/args_cache") args_cache = {
+struct bpf_map_def SEC("maps/args_envs_cache") args_envs_cache = {
     .type = BPF_MAP_TYPE_LRU_HASH,
     .key_size = sizeof(u32),
-    .value_size = sizeof(struct args_value_t),
+    .value_size = sizeof(struct str_buffer_t),
     .max_entries = 255,
     .pinning = 0,
     .namespace = "",
 };
 
-struct bpf_map_def SEC("maps/args_value") args_value = {
+#define ARGS_BUFFER_KEY 0
+#define ENVS_BUFFER_KEY 1
+
+struct bpf_map_def SEC("maps/str_buffers") str_buffers = {
     .type = BPF_MAP_TYPE_PERCPU_ARRAY,
     .key_size = sizeof(u32),
-    .value_size = sizeof(struct args_value_t),
-    .max_entries = 1,
+    .value_size = sizeof(struct str_buffer_t),
+    .max_entries = 2,
     .pinning = 0,
     .namespace = "",
 };
@@ -45,7 +48,8 @@ struct exec_event_t {
     struct process_context_t process;
     struct proc_cache_t proc_entry;
     struct pid_cache_t pid_entry;
-    struct first_args_value_t args;
+    struct perf_str_buffer_t args;
+    struct perf_str_buffer_t envs;
 };
 
 struct exit_event_t {
@@ -85,50 +89,44 @@ static __attribute__((always_inline)) u32 copy_tty_name(char dst[TTY_NAME_LEN], 
     return TTY_NAME_LEN;
 }
 
-void __attribute__((always_inline)) extract_args(struct syscall_cache_t *syscall, const char **argv) {
-    syscall->exec.args_id = bpf_get_prandom_u32();
+void __attribute__((always_inline)) parse_str_array(struct str_array_ref_t *array_ref, const char **data, int buff_key) {
+    u32 id = bpf_get_prandom_u32();
+    array_ref->id = id;
 
-    u32 key = 0;
-    struct args_value_t *args = bpf_map_lookup_elem(&args_value, &key);
-    if (!args) {
+    u32 key = buff_key;
+    struct str_buffer_t *buff = bpf_map_lookup_elem(&str_buffers, &key);
+    if (!buff) {
         return;
     }
 
-    u32 offset = 0;
-    u32 a = 1;
-    u32 len = 0;
+    int i = 0, a = 1, n = 0, offset = 0;
 
     const char *str;
-    bpf_probe_read(&str, sizeof(str), (void *)&argv[a]);
+    bpf_probe_read(&str, sizeof(str), (void *)&data[a]);
 
 #pragma unroll
-    for (int i = 0; i < MAX_ARGS; i++) {
-        int n = bpf_probe_read_str(&(args->args[(offset + sizeof(len)) & (MAX_ARGS_LEN - MAX_ARG_SIZE - 1)]), MAX_ARG_SIZE, (void *)str);
+    for (i = 0; i < MAX_ARRAY_ELEMENT; i++) {
+        n = bpf_probe_read_str(&(buff->value[(offset + sizeof(n)) & (MAX_STR_BUFF_LEN - MAX_ARRAY_ELEMENT_SIZE - 1)]), MAX_ARRAY_ELEMENT_SIZE, (void *)str);
         if (n > 0) {
-            n--; // ignore trailing space
-
-            len = n;
-
-            bpf_probe_read(&(args->args[offset&(MAX_ARGS_LEN - MAX_ARG_SIZE - 1)]), sizeof(len), &len);
-
-            bpf_probe_read(&str, sizeof(str), (void *)&argv[++a]);
-
-            offset += n + sizeof(len);
+            n--; // remove trailing 0
+            bpf_probe_read(&(buff->value[offset&(MAX_STR_BUFF_LEN - MAX_ARRAY_ELEMENT_SIZE - 1)]), sizeof(n), &n);
+            bpf_probe_read(&str, sizeof(str), (void *)&data[++a]);
+            offset += n + sizeof(n);
         } else {
-            bpf_map_update_elem(&args_cache, &syscall->exec.args_id, args, BPF_ANY);
-            return;
+            break;
         }
     }
 
-    syscall->exec.args_truncated = 1;
-    bpf_map_update_elem(&args_cache, &syscall->exec.args_id, args, BPF_ANY);
+    array_ref->truncated = i == MAX_ARRAY_ELEMENT;
+    bpf_map_update_elem(&args_envs_cache, &id, buff, BPF_ANY);
 }
 
 int __attribute__((always_inline)) trace__sys_execveat(const char **argv, const char **env) {
     struct syscall_cache_t syscall = {
         .type = SYSCALL_EXEC,
     };
-    extract_args(&syscall, argv);
+    parse_str_array(&syscall.exec.args, argv, ARGS_BUFFER_KEY);
+    parse_str_array(&syscall.exec.envs, env, ENVS_BUFFER_KEY);
 
     cache_syscall(&syscall);
     return 0;
@@ -152,19 +150,19 @@ int __attribute__((always_inline)) handle_exec_event(struct pt_regs *ctx, struct
     struct inode *inode = (struct inode *)PT_REGS_PARM2(ctx);
     struct path *path = &file->f_path;
 
-    syscall->open.dentry = get_file_dentry(file);
-    syscall->open.path_key = get_inode_key_path(inode, &file->f_path);
-    syscall->open.path_key.path_id = get_path_id(0);
+    syscall->exec.dentry = get_file_dentry(file);
+    syscall->exec.path_key = get_inode_key_path(inode, &file->f_path);
+    syscall->exec.path_key.path_id = get_path_id(0);
 
     u64 pid_tgid = bpf_get_current_pid_tgid();
     u32 tgid = pid_tgid >> 32;
 
     struct proc_cache_t entry = {
         .executable = {
-            .inode = syscall->open.path_key.ino,
+            .inode = syscall->exec.path_key.ino,
             .overlay_numlower = get_overlay_numlower(get_path_dentry(path)),
             .mount_id = get_path_mount_id(path),
-            .path_id = syscall->open.path_key.path_id,
+            .path_id = syscall->exec.path_key.path_id,
         },
         .container = {},
         .exec_timestamp = bpf_ktime_get_ns(),
@@ -172,7 +170,7 @@ int __attribute__((always_inline)) handle_exec_event(struct pt_regs *ctx, struct
     bpf_get_current_comm(&entry.comm, sizeof(entry.comm));
 
     // cache dentry
-    resolve_dentry(syscall->open.dentry, syscall->open.path_key, 0);
+    resolve_dentry(syscall->exec.dentry, syscall->exec.path_key, 0);
 
     u32 cookie = bpf_get_prandom_u32();
     // insert new proc cache entry
@@ -355,12 +353,23 @@ int kprobe_exit_itimers(struct pt_regs *ctx) {
     return 0;
 }
 
-void __attribute__((always_inline)) fill_args(struct exec_event_t *event, struct syscall_cache_t *syscall) {
-    struct args_value_t *args = bpf_map_lookup_elem(&args_cache, &syscall->exec.args_id);
-    if (args) {
-        bpf_probe_read(&event->args.args, MAX_ARGS_PERF_LEN, args->args);
-        event->args.id = syscall->exec.args_id;
-        event->args.truncated = syscall->exec.args_truncated;
+void __attribute__((always_inline)) fill_args_envs(struct exec_event_t *event, struct syscall_cache_t *syscall) {
+    if (syscall->exec.args.id) {
+        struct str_buffer_t *buff = bpf_map_lookup_elem(&args_envs_cache, &syscall->exec.args.id);
+        if (buff) {
+            bpf_probe_read(&event->args.value, MAX_PERF_STR_BUFF_LEN, buff->value);
+            event->args.id = syscall->exec.args.id;
+            event->args.truncated = syscall->exec.args.truncated;
+        }
+    }
+
+    if (syscall->exec.envs.id) {
+        struct str_buffer_t *buff = bpf_map_lookup_elem(&args_envs_cache, &syscall->exec.envs.id);
+        if (buff) {
+            bpf_probe_read(&event->envs.value, MAX_PERF_STR_BUFF_LEN, buff->value);
+            event->envs.id = syscall->exec.envs.id;
+            event->envs.truncated = syscall->exec.envs.truncated;
+        }
     }
 }
 
@@ -398,7 +407,7 @@ int kprobe_security_bprm_committed_creds(struct pt_regs *ctx) {
 
             fill_process_context(&event.process);
             fill_container_context(proc_entry, &event.proc_entry.container);
-            fill_args(&event, syscall);
+            fill_args_envs(&event, syscall);
 
             // send the entry to maintain userspace cache
             send_event(ctx, EVENT_EXEC, event);

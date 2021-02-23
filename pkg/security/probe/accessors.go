@@ -23,14 +23,23 @@ func (m *Model) GetIterator(field eval.Field) (eval.Iterator, error) {
 	case "exec.args":
 		return &model.ExecArgsIterator{}, nil
 
+	case "exec.envs":
+		return &model.ExecEnvsIterator{}, nil
+
 	case "process.ancestors":
 		return &model.ProcessAncestorsIterator{}, nil
 
 	case "process.ancestors.args":
 		return &model.ExecArgsIterator{}, nil
 
+	case "process.ancestors.envs":
+		return &model.ExecEnvsIterator{}, nil
+
 	case "process.args":
 		return &model.ExecArgsIterator{}, nil
+
+	case "process.envs":
+		return &model.ExecEnvsIterator{}, nil
 
 	}
 
@@ -235,6 +244,7 @@ func (m *Model) GetEvaluator(field eval.Field, regID eval.RegisterID) (eval.Eval
 	case "exec.args":
 		return &eval.StringEvaluator{
 			EvalFnc: func(ctx *eval.Context) string {
+
 				var result string
 
 				reg := ctx.Registers[regID]
@@ -277,6 +287,30 @@ func (m *Model) GetEvaluator(field eval.Field, regID eval.RegisterID) (eval.Eval
 			Field: field,
 
 			Weight: eval.HandlerWeight,
+		}, nil
+
+	case "exec.envs":
+		return &eval.StringEvaluator{
+			EvalFnc: func(ctx *eval.Context) string {
+
+				var result string
+
+				reg := ctx.Registers[regID]
+				if reg.Value != nil {
+
+					elementPtr := (*string)(reg.Value)
+					element := *elementPtr
+
+					result = element
+
+				}
+
+				return result
+
+			},
+			Field: field,
+
+			Weight: eval.IteratorWeight,
 		}, nil
 
 	case "exec.filename":
@@ -781,6 +815,30 @@ func (m *Model) GetEvaluator(field eval.Field, regID eval.RegisterID) (eval.Eval
 			Weight: eval.IteratorWeight,
 		}, nil
 
+	case "process.ancestors.envs":
+		return &eval.StringEvaluator{
+			EvalFnc: func(ctx *eval.Context) string {
+
+				var result string
+
+				reg := ctx.Registers[regID]
+				if reg.Value != nil {
+
+					elementPtr := (*string)(reg.Value)
+					element := *elementPtr
+
+					result = element
+
+				}
+
+				return result
+
+			},
+			Field: field,
+
+			Weight: eval.IteratorWeight,
+		}, nil
+
 	case "process.ancestors.filename":
 		return &eval.StringEvaluator{
 			EvalFnc: func(ctx *eval.Context) string {
@@ -1126,6 +1184,30 @@ func (m *Model) GetEvaluator(field eval.Field, regID eval.RegisterID) (eval.Eval
 			Field: field,
 
 			Weight: eval.HandlerWeight,
+		}, nil
+
+	case "process.envs":
+		return &eval.StringEvaluator{
+			EvalFnc: func(ctx *eval.Context) string {
+
+				var result string
+
+				reg := ctx.Registers[regID]
+				if reg.Value != nil {
+
+					elementPtr := (*string)(reg.Value)
+					element := *elementPtr
+
+					result = element
+
+				}
+
+				return result
+
+			},
+			Field: field,
+
+			Weight: eval.IteratorWeight,
 		}, nil
 
 	case "process.filename":
@@ -1851,6 +1933,7 @@ func (e *Event) GetFields() []eval.Field {
 		"exec.args",
 		"exec.container_path",
 		"exec.cookie",
+		"exec.envs",
 		"exec.filename",
 		"exec.gid",
 		"exec.group",
@@ -1890,6 +1973,7 @@ func (e *Event) GetFields() []eval.Field {
 		"process.ancestors.args",
 		"process.ancestors.container_path",
 		"process.ancestors.cookie",
+		"process.ancestors.envs",
 		"process.ancestors.filename",
 		"process.ancestors.gid",
 		"process.ancestors.group",
@@ -1906,6 +1990,7 @@ func (e *Event) GetFields() []eval.Field {
 		"process.args",
 		"process.container_path",
 		"process.cookie",
+		"process.envs",
 		"process.filename",
 		"process.gid",
 		"process.group",
@@ -2065,6 +2150,30 @@ func (e *Event) GetFieldValue(field eval.Field) (interface{}, error) {
 	case "exec.cookie":
 
 		return int(e.ResolveExecCookie(&e.Exec)), nil
+
+	case "exec.envs":
+
+		var values []string
+
+		ctx := &eval.Context{}
+		ctx.SetObject(unsafe.Pointer(e))
+
+		iterator := &model.ExecEnvsIterator{}
+		ptr := iterator.Front(ctx)
+
+		for ptr != nil {
+
+			elementPtr := (*string)(ptr)
+			element := *elementPtr
+
+			result := element
+
+			values = append(values, result)
+
+			ptr = iterator.Next()
+		}
+
+		return values, nil
 
 	case "exec.filename":
 
@@ -2272,6 +2381,30 @@ func (e *Event) GetFieldValue(field eval.Field) (interface{}, error) {
 			element := (*model.ProcessCacheEntry)(ptr)
 
 			result := int((*Event)(ctx.Object).ResolveExecCookie(&element.ExecEvent))
+
+			values = append(values, result)
+
+			ptr = iterator.Next()
+		}
+
+		return values, nil
+
+	case "process.ancestors.envs":
+
+		var values []string
+
+		ctx := &eval.Context{}
+		ctx.SetObject(unsafe.Pointer(e))
+
+		iterator := &model.ExecEnvsIterator{}
+		ptr := iterator.Front(ctx)
+
+		for ptr != nil {
+
+			elementPtr := (*string)(ptr)
+			element := *elementPtr
+
+			result := element
 
 			values = append(values, result)
 
@@ -2611,6 +2744,30 @@ func (e *Event) GetFieldValue(field eval.Field) (interface{}, error) {
 
 		return int(e.ResolveExecCookie(&e.Process.ExecEvent)), nil
 
+	case "process.envs":
+
+		var values []string
+
+		ctx := &eval.Context{}
+		ctx.SetObject(unsafe.Pointer(e))
+
+		iterator := &model.ExecEnvsIterator{}
+		ptr := iterator.Front(ctx)
+
+		for ptr != nil {
+
+			elementPtr := (*string)(ptr)
+			element := *elementPtr
+
+			result := element
+
+			values = append(values, result)
+
+			ptr = iterator.Next()
+		}
+
+		return values, nil
+
 	case "process.filename":
 
 		return e.ResolveExecInode(&e.Process.ExecEvent), nil
@@ -2908,6 +3065,9 @@ func (e *Event) GetFieldEventType(field eval.Field) (eval.EventType, error) {
 	case "exec.cookie":
 		return "exec", nil
 
+	case "exec.envs":
+		return "exec", nil
+
 	case "exec.filename":
 		return "exec", nil
 
@@ -3025,6 +3185,9 @@ func (e *Event) GetFieldEventType(field eval.Field) (eval.EventType, error) {
 	case "process.ancestors.cookie":
 		return "*", nil
 
+	case "process.ancestors.envs":
+		return "*", nil
+
 	case "process.ancestors.filename":
 		return "*", nil
 
@@ -3071,6 +3234,9 @@ func (e *Event) GetFieldEventType(field eval.Field) (eval.EventType, error) {
 		return "*", nil
 
 	case "process.cookie":
+		return "*", nil
+
+	case "process.envs":
 		return "*", nil
 
 	case "process.filename":
@@ -3331,6 +3497,10 @@ func (e *Event) GetFieldType(field eval.Field) (reflect.Kind, error) {
 
 		return reflect.Int, nil
 
+	case "exec.envs":
+
+		return reflect.String, nil
+
 	case "exec.filename":
 
 		return reflect.String, nil
@@ -3487,6 +3657,10 @@ func (e *Event) GetFieldType(field eval.Field) (reflect.Kind, error) {
 
 		return reflect.Int, nil
 
+	case "process.ancestors.envs":
+
+		return reflect.String, nil
+
 	case "process.ancestors.filename":
 
 		return reflect.String, nil
@@ -3550,6 +3724,10 @@ func (e *Event) GetFieldType(field eval.Field) (reflect.Kind, error) {
 	case "process.cookie":
 
 		return reflect.Int, nil
+
+	case "process.envs":
+
+		return reflect.String, nil
 
 	case "process.filename":
 
@@ -3972,6 +4150,15 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 		e.Exec.Cookie = uint32(v)
 		return nil
 
+	case "exec.envs":
+
+		var ok bool
+		if e.Exec.Envs, ok = value.([]string); !ok {
+
+			return &eval.ErrValueTypeMismatch{Field: "Exec.Envs"}
+		}
+		return nil
+
 	case "exec.filename":
 
 		var ok bool
@@ -4351,6 +4538,15 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 		e.Process.Ancestor.ProcessContext.ExecEvent.Cookie = uint32(v)
 		return nil
 
+	case "process.ancestors.envs":
+
+		var ok bool
+		if e.Process.Ancestor.ProcessContext.ExecEvent.Envs, ok = value.([]string); !ok {
+
+			return &eval.ErrValueTypeMismatch{Field: "Process.Ancestor.ProcessContext.ExecEvent.Envs"}
+		}
+		return nil
+
 	case "process.ancestors.filename":
 
 		if e.Process.Ancestor == nil {
@@ -4553,6 +4749,15 @@ func (e *Event) SetFieldValue(field eval.Field, value interface{}) error {
 			return &eval.ErrValueTypeMismatch{Field: "Process.ExecEvent.Cookie"}
 		}
 		e.Process.ExecEvent.Cookie = uint32(v)
+		return nil
+
+	case "process.envs":
+
+		var ok bool
+		if e.Process.ExecEvent.Envs, ok = value.([]string); !ok {
+
+			return &eval.ErrValueTypeMismatch{Field: "Process.ExecEvent.Envs"}
+		}
 		return nil
 
 	case "process.filename":

@@ -72,7 +72,7 @@ func AllMaps() []*manager.Map {
 		// Exec tables
 		{Name: "proc_cache"},
 		{Name: "pid_cache"},
-		{Name: "args_cache"},
+		{Name: "args_envs_cache"},
 		// Syscall monitor tables
 		{Name: "buffer_selector"},
 		{Name: "noisy_processes_fb"},

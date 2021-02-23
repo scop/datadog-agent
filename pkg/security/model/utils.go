@@ -6,6 +6,7 @@
 package model
 
 import (
+	"bytes"
 	"unsafe"
 
 	"github.com/pkg/errors"
@@ -29,7 +30,7 @@ func SliceToArray(src []byte, dst unsafe.Pointer) {
 func UnmarshalStringArray(data []byte) ([]string, error) {
 	var result []string
 
-	for i := uint32(0); int(i) < len(data); {
+	for i := uint32(0); int(i)+4 < len(data); {
 		// size of arg
 		n := ByteOrder.Uint32(data[i : i+4])
 		if n <= 0 {
@@ -41,7 +42,7 @@ func UnmarshalStringArray(data []byte) ([]string, error) {
 			return result, ErrStringArrayOverflow
 		}
 
-		arg := string(data[i : i+n])
+		arg := string(bytes.Trim(data[i:i+n], "\x00"))
 		i += n
 
 		result = append(result, arg)
