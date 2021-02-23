@@ -75,30 +75,27 @@ var taggerListCommand = &cobra.Command{
 		for entity, tagItem := range tr.Entities {
 			fmt.Fprintln(color.Output, fmt.Sprintf("\n=== Entity %s ===", color.GreenString(entity)))
 
-			fmt.Fprint(color.Output, "Tags: [")
-			// sort tags for easy comparison
-			sort.Slice(tagItem.Tags, func(i, j int) bool {
-				return tagItem.Tags[i] < tagItem.Tags[j]
-			})
-			for i, tag := range tagItem.Tags {
-				tagInfo := strings.Split(tag, ":")
-				fmt.Fprintf(color.Output, fmt.Sprintf("%s:%s", color.BlueString(tagInfo[0]), color.CyanString(strings.Join(tagInfo[1:], ":"))))
-				if i != len(tagItem.Tags)-1 {
-					fmt.Fprintf(color.Output, " ")
+			for source, tags := range tagItem.Tags {
+				fmt.Fprintln(color.Output, fmt.Sprintf("=== Source %s ===", source))
+
+				fmt.Fprint(color.Output, "Tags: [")
+
+				// sort tags for easy comparison
+				sort.Slice(tags, func(i, j int) bool {
+					return tags[i] < tags[j]
+				})
+
+				for i, tag := range tags {
+					tagInfo := strings.Split(tag, ":")
+					fmt.Fprintf(color.Output, fmt.Sprintf("%s:%s", color.BlueString(tagInfo[0]), color.CyanString(strings.Join(tagInfo[1:], ":"))))
+					if i != len(tags)-1 {
+						fmt.Fprintf(color.Output, " ")
+					}
 				}
+
+				fmt.Fprintln(color.Output, "]")
 			}
-			fmt.Fprintln(color.Output, "]")
-			fmt.Fprint(color.Output, "Sources: [")
-			sort.Slice(tagItem.Sources, func(i, j int) bool {
-				return tagItem.Sources[i] < tagItem.Sources[j]
-			})
-			for i, source := range tagItem.Sources {
-				fmt.Fprintf(color.Output, fmt.Sprintf("%s", color.BlueString(source)))
-				if i != len(tagItem.Sources)-1 {
-					fmt.Fprintf(color.Output, " ")
-				}
-			}
-			fmt.Fprintln(color.Output, "]")
+
 			fmt.Fprintln(color.Output, "===")
 		}
 
