@@ -90,6 +90,7 @@ type MetricSample struct {
 	FlushFirstValue bool
 	OriginID        string
 	K8sOriginID     string
+	Cardinality     collectors.TagCardinality
 }
 
 // Implement the MetricSampleContext interface
@@ -104,15 +105,15 @@ func (m *MetricSample) GetHost() string {
 	return m.Host
 }
 
-func findOriginTags(origin string, tb *util.TagsBuilder) {
+func findOriginTags(origin string, cardinality collectors.TagCardinality, tb *util.TagsBuilder) {
 	if origin != listeners.NoOrigin {
-		if err := tagger.TagBuilder(origin, tagger.DogstatsdCardinality, tb); err != nil {
+		if err := tagger.TagBuilder(origin, cardinality, tb); err != nil {
 			log.Errorf(err.Error())
 		}
 	}
 
 	// Include orchestrator scope tags if the cardinality is set to orchestrator
-	if tagger.DogstatsdCardinality == collectors.OrchestratorCardinality {
+	if cardinality == collectors.OrchestratorCardinality {
 		if err := tagger.OrchestratorScopeTagBuilder(tb); err != nil {
 			log.Error(err.Error())
 		}
@@ -120,13 +121,13 @@ func findOriginTags(origin string, tb *util.TagsBuilder) {
 }
 
 // EnrichTags expend a tag list with origin detection tags
-func EnrichTags(tb *util.TagsBuilder, originID string, k8sOriginID string) {
+func EnrichTags(tb *util.TagsBuilder, originID string, k8sOriginID string, cardinality collectors.TagCardinality) {
 	if originID != "" {
-		findOriginTags(originID, tb)
+		findOriginTags(originID, cardinality, tb)
 	}
 
 	if k8sOriginID != "" {
-		if err := tagger.TagBuilder(k8sOriginID, tagger.DogstatsdCardinality, tb); err != nil {
+		if err := tagger.TagBuilder(k8sOriginID, cardinality, tb); err != nil {
 			tlmUDPOriginDetectionError.Inc()
 			log.Tracef("Cannot get tags for entity %s: %s", k8sOriginID, err)
 		}
@@ -138,7 +139,7 @@ func EnrichTags(tb *util.TagsBuilder, originID string, k8sOriginID string) {
 // GetTags returns the metric sample tags
 func (m *MetricSample) GetTags(tb *util.TagsBuilder) {
 	tb.Append(m.Tags...)
-	EnrichTags(tb, m.OriginID, m.K8sOriginID)
+	EnrichTags(tb, m.OriginID, m.K8sOriginID, m.Cardinality)
 }
 
 // Copy returns a deep copy of the m MetricSample

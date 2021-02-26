@@ -17,6 +17,7 @@ import (
 
 	agentpayload "github.com/DataDog/agent-payload/gogen"
 	"github.com/DataDog/datadog-agent/pkg/serializer/marshaler"
+	"github.com/DataDog/datadog-agent/pkg/tagger/collectors"
 	"github.com/DataDog/datadog-agent/pkg/telemetry"
 	"github.com/DataDog/datadog-agent/pkg/util"
 	utiljson "github.com/DataDog/datadog-agent/pkg/util/json"
@@ -82,18 +83,19 @@ func GetAlertTypeFromString(val string) (EventAlertType, error) {
 
 // Event holds an event (w/ serialization to DD agent 5 intake format)
 type Event struct {
-	Title          string         `json:"msg_title"`
-	Text           string         `json:"msg_text"`
-	Ts             int64          `json:"timestamp"`
-	Priority       EventPriority  `json:"priority,omitempty"`
-	Host           string         `json:"host"`
-	Tags           []string       `json:"tags,omitempty"`
-	AlertType      EventAlertType `json:"alert_type,omitempty"`
-	AggregationKey string         `json:"aggregation_key,omitempty"`
-	SourceTypeName string         `json:"source_type_name,omitempty"`
-	EventType      string         `json:"event_type,omitempty"`
-	OriginID       string         `json:"-"`
-	K8sOriginID    string         `json:"-"`
+	Title          string                    `json:"msg_title"`
+	Text           string                    `json:"msg_text"`
+	Ts             int64                     `json:"timestamp"`
+	Priority       EventPriority             `json:"priority,omitempty"`
+	Host           string                    `json:"host"`
+	Tags           []string                  `json:"tags,omitempty"`
+	AlertType      EventAlertType            `json:"alert_type,omitempty"`
+	AggregationKey string                    `json:"aggregation_key,omitempty"`
+	SourceTypeName string                    `json:"source_type_name,omitempty"`
+	EventType      string                    `json:"event_type,omitempty"`
+	OriginID       string                    `json:"-"`
+	K8sOriginID    string                    `json:"-"`
+	Cardinality    collectors.TagCardinality `json:"-"`
 }
 
 // Return a JSON string or "" in case of error during the Marshaling

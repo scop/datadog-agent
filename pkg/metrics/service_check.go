@@ -20,6 +20,7 @@ import (
 
 	agentpayload "github.com/DataDog/agent-payload/gogen"
 	"github.com/DataDog/datadog-agent/pkg/serializer/marshaler"
+	"github.com/DataDog/datadog-agent/pkg/tagger/collectors"
 	"github.com/DataDog/datadog-agent/pkg/telemetry"
 	utiljson "github.com/DataDog/datadog-agent/pkg/util/json"
 )
@@ -76,14 +77,15 @@ func (s ServiceCheckStatus) String() string {
 
 // ServiceCheck holds a service check (w/ serialization to DD api format)
 type ServiceCheck struct {
-	CheckName   string             `json:"check"`
-	Host        string             `json:"host_name"`
-	Ts          int64              `json:"timestamp"`
-	Status      ServiceCheckStatus `json:"status"`
-	Message     string             `json:"message"`
-	Tags        []string           `json:"tags"`
-	OriginID    string             `json:"-"`
-	K8sOriginID string             `json:"-"`
+	CheckName   string                    `json:"check"`
+	Host        string                    `json:"host_name"`
+	Ts          int64                     `json:"timestamp"`
+	Status      ServiceCheckStatus        `json:"status"`
+	Message     string                    `json:"message"`
+	Tags        []string                  `json:"tags"`
+	OriginID    string                    `json:"-"`
+	K8sOriginID string                    `json:"-"`
+	Cardinality collectors.TagCardinality `json:"-"`
 }
 
 // ServiceChecks represents a list of service checks ready to be serialize

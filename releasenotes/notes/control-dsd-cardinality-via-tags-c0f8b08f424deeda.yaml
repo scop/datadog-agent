@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    Dogstatsd clients can now choose the cardinality of tags added by origin detection
+    via the tag dd.internal.cardinality (low, orchestrator, high).
