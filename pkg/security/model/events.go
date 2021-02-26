@@ -47,6 +47,8 @@ const (
 	ExitEventType
 	// InvalidateDentryEventType Dentry invalidated event
 	InvalidateDentryEventType
+	// ArgsEnvsEventType args and envs event
+	ArgsEnvsEventType
 	// MaxEventType is used internally to get the maximum number of kernel events.
 	MaxEventType
 
@@ -105,6 +107,8 @@ func (t EventType) String() string {
 		return "exit"
 	case InvalidateDentryEventType:
 		return "invalidate_dentry"
+	case ArgsEnvsEventType:
+		return "args_envs_dentry"
 
 	case CustomLostReadEventType:
 		return "lost_events_read"

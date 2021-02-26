@@ -21,6 +21,7 @@ import (
 
 	"github.com/DataDog/datadog-go/statsd"
 	lib "github.com/DataDog/ebpf"
+	"github.com/hashicorp/golang-lru/simplelru"
 	"github.com/pkg/errors"
 
 	"github.com/DataDog/datadog-agent/pkg/security/model"
@@ -77,6 +78,8 @@ type ProcessResolver struct {
 	opts             ProcessResolverOpts
 
 	entryCache map[uint32]*model.ProcessCacheEntry
+	argsCache  *simplelru.LRU
+	envsCache  *simplelru.LRU
 }
 
 // SendStats sends process resolver metrics
@@ -90,6 +93,26 @@ func (p *ProcessResolver) SendStats() error {
 	}
 
 	return nil
+}
+
+// UpdateArgs updates arguments of the given id
+func (p *ProcessResolver) UpdateArgs(id uint32, newArgs []string) {
+	var args []string
+	if entry, found := p.argsCache.Get(id); found {
+		args = entry.([]string)
+	}
+	args = append(args, newArgs...)
+	p.argsCache.Add(id, args)
+}
+
+// UpdateEnvs updates environment of the given id
+func (p *ProcessResolver) UpdateEnvs(id uint32, newEnvs []string) {
+	var envs []string
+	if entry, found := p.envsCache.Get(id); found {
+		envs = entry.([]string)
+	}
+	envs = append(envs, newEnvs...)
+	p.envsCache.Add(id, envs)
 }
 
 // AddForkEntry adds an entry to the local cache and returns the newly created entry
@@ -366,38 +389,11 @@ func (p *ProcessResolver) resolveWithProcfs(pid uint32) *model.ProcessCacheEntry
 }
 
 func (p *ProcessResolver) resolveExecArgs(pce *model.ProcessCacheEntry) {
-	getStrArray := func(id uint32) []string {
-		entryb, err := p.argsEnvsCacheMap.LookupBytes(id)
-		if err != nil || entryb == nil {
-			return nil
-		}
-
-		array, err := model.UnmarshalStringArray(entryb)
-		if err != nil {
-			return nil
-		}
-
-		return array
+	if entry, found := p.argsCache.Get(pce.ArgsID); found {
+		pce.Args = entry.([]string)
 	}
-
-	if pce.ArgsOverflow {
-		if args := getStrArray(pce.ArgsID); args != nil {
-			pce.Args = args
-		}
-
-		if pce.ArgsTruncated {
-			pce.Args = append(pce.Args, "...")
-		}
-	}
-
-	if pce.EnvsOverflow {
-		if envs := getStrArray(pce.EnvsID); envs != nil {
-			pce.Envs = envs
-		}
-
-		if pce.EnvsTruncated {
-			pce.Envs = append(pce.Envs, "...")
-		}
+	if entry, found := p.envsCache.Get(pce.EnvsID); found {
+		pce.Envs = entry.([]string)
 	}
 }
 
@@ -420,10 +416,6 @@ func (p *ProcessResolver) Start(ctx context.Context) error {
 	}
 
 	if p.pidCacheMap, err = p.probe.Map("pid_cache"); err != nil {
-		return err
-	}
-
-	if p.argsEnvsCacheMap, err = p.probe.Map("args_envs_cache"); err != nil {
 		return err
 	}
 
@@ -581,12 +573,23 @@ func (p *ProcessResolver) GetEntryCacheSize() float64 {
 
 // NewProcessResolver returns a new process resolver
 func NewProcessResolver(probe *Probe, resolvers *Resolvers, client *statsd.Client, opts ProcessResolverOpts) (*ProcessResolver, error) {
+	argsCache, err := simplelru.NewLRU(512, nil)
+	if err != nil {
+		return nil, err
+	}
+	envsCache, err := simplelru.NewLRU(512, nil)
+	if err != nil {
+		return nil, err
+	}
+
 	return &ProcessResolver{
 		probe:      probe,
 		resolvers:  resolvers,
 		client:     client,
 		entryCache: make(map[uint32]*model.ProcessCacheEntry),
 		opts:       opts,
+		argsCache:  argsCache,
+		envsCache:  envsCache,
 	}, nil
 }
 

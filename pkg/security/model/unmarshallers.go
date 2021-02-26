@@ -9,6 +9,7 @@ package model
 
 import (
 	"bytes"
+	"fmt"
 	"time"
 	"unsafe"
 
@@ -86,7 +87,7 @@ func (e *Event) UnmarshalBinary(data []byte) (int, error) {
 
 // UnmarshalBinary unmarshals a binary representation of itself
 func (e *ExecEvent) UnmarshalBinary(data []byte) (int, error) {
-	if len(data) < 272 {
+	if len(data) < 164 {
 		return 0, ErrNotEnoughData
 	}
 
@@ -122,41 +123,13 @@ func (e *ExecEvent) UnmarshalBinary(data []byte) (int, error) {
 
 	e.ArgsID = ByteOrder.Uint32(data[read : read+4])
 	e.ArgsTruncated = ByteOrder.Uint32(data[read+4:read+8]) == 1
-	SliceToArray(data[read+8:read+136], unsafe.Pointer(&e.ArgsRaw))
-	e.UnmarshalArgs()
-	read += 72
+	read += 8
 
 	e.EnvsID = ByteOrder.Uint32(data[read : read+4])
 	e.EnvsTruncated = ByteOrder.Uint32(data[read+4:read+8]) == 1
-	SliceToArray(data[read+8:read+72], unsafe.Pointer(&e.EnvsRaw))
-	e.UnmarshalEnvs()
-	read += 72
+	read += 8
 
 	return read, nil
-}
-
-// UnmarshalArgs resolves exec arguments
-func (e *ExecEvent) UnmarshalArgs() {
-	args, err := UnmarshalStringArray(e.ArgsRaw[:])
-	if err != nil {
-		e.ArgsOverflow = true
-	}
-
-	if args != nil {
-		e.Args = args
-	}
-}
-
-// UnmarshalEnvs resolves exec arguments
-func (e *ExecEvent) UnmarshalEnvs() {
-	envs, err := UnmarshalStringArray(e.EnvsRaw[:])
-	if err != nil {
-		e.EnvsOverflow = true
-	}
-
-	if envs != nil {
-		e.Envs = envs
-	}
 }
 
 // UnmarshalBinary unmarshals a binary representation of itself
@@ -170,6 +143,29 @@ func (e *InvalidateDentryEvent) UnmarshalBinary(data []byte) (int, error) {
 	e.DiscarderRevision = ByteOrder.Uint32(data[12:16])
 
 	return 16, nil
+}
+
+// UnmarshalBinary unmarshals a binary representation of itself
+func (e *ArgsEnvsEvent) UnmarshalBinary(data []byte) (int, error) {
+	if len(data) < 140 {
+		return 0, ErrNotEnoughData
+	}
+
+	e.ID = ByteOrder.Uint32(data[0:4])
+	e.IsArgs = ByteOrder.Uint32(data[4:8]) == argsType
+	e.Size = ByteOrder.Uint32(data[8:12])
+	SliceToArray(data[12:140], unsafe.Pointer(&e.ArrayRaw))
+	fmt.Printf("ZZZZZZZZZZZZz: %+v %d\n", e.ArrayRaw, e.Size)
+	array, err := UnmarshalStringArray(e.ArrayRaw[:e.Size])
+	if err != nil || e.Size == 128 {
+		if len(array) > 0 {
+			array[len(array)-1] = array[len(array)-1] + "..."
+		}
+		e.Overflow = true
+	}
+	e.Array = array
+
+	return 140, nil
 }
 
 // UnmarshalBinary unmarshals a binary representation of itself

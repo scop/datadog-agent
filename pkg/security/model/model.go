@@ -124,6 +124,7 @@ type Event struct {
 	Mount            MountEvent            `field:"-"`
 	Umount           UmountEvent           `field:"-"`
 	InvalidateDentry InvalidateDentryEvent `field:"-"`
+	ArgsEnvs         ArgsEnvsEvent         `field:"-"`
 }
 
 // GetType returns the event type
@@ -237,15 +238,11 @@ type ExecEvent struct {
 	Args []string `field:"args" iterator:"ExecArgsIterator"`
 	Envs []string `field:"envs" iterator:"ExecEnvsIterator"`
 
-	ArgsID        uint32   `field:"-"`
-	ArgsTruncated bool     `field:"-"`
-	ArgsRaw       [64]byte `field:"-"`
-	ArgsOverflow  bool     `field:"-"`
+	ArgsID        uint32 `field:"-"`
+	ArgsTruncated bool   `field:"args_truncated"`
 
-	EnvsID        uint32   `field:"-"`
-	EnvsTruncated bool     `field:"-"`
-	EnvsRaw       [64]byte `field:"-"`
-	EnvsOverflow  bool     `field:"-"`
+	EnvsID        uint32 `field:"-"`
+	EnvsTruncated bool   `field:"envs_truncated"`
 }
 
 // GetPathResolutionError returns the path resolution error as a string if there is one
@@ -301,6 +298,21 @@ type MkdirEvent struct {
 	SyscallEvent
 	FileEvent
 	Mode uint32 `field:"mode"`
+}
+
+const (
+	argsType uint32 = iota + 1
+	envsType
+)
+
+// ArgsEnvs defines a args/envs event
+type ArgsEnvsEvent struct {
+	ID       uint32
+	IsArgs   bool
+	Size     uint32
+	Array    []string
+	ArrayRaw [128]byte
+	Overflow bool
 }
 
 // MountEvent represents a mount event

@@ -39,7 +39,8 @@ func UnmarshalStringArray(data []byte) ([]string, error) {
 		i += 4
 
 		if int(i+n) > len(data) {
-			return result, ErrStringArrayOverflow
+			arg := string(bytes.Trim(data[i:len(data)-1], "\x00"))
+			return append(result, arg), ErrStringArrayOverflow
 		}
 
 		arg := string(bytes.Trim(data[i:i+n], "\x00"))

@@ -127,8 +127,7 @@ func (ev *Event) ResolveContainerID(e *model.ContainerContext) string {
 
 // UnmarshalExecEvent unmarshal an ExecEvent
 func (ev *Event) UnmarshalExecEvent(data []byte) (int, error) {
-	// TODO safchain fix this insane indirection forcing us to have multiple time the same checks
-	if len(data) < 272 {
+	if len(data) < 164 {
 		return 0, model.ErrNotEnoughData
 	}
 
